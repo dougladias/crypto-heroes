@@ -11,7 +11,7 @@ const ctx = canvas.getContext('2d');
 // Asset manifest
 const IMAGES = {
   // Tela inicial
-  logo: 'assets/background/logo-night.png',
+  logo: 'assets/logo/logo-night.png',
 
   // Tela de seleção de personagem
   selectPerson: 'assets/background/selectPerson.png',
@@ -23,16 +23,17 @@ const IMAGES = {
   hero_gusd:    'assets/icon/hero_gusd.png',  
   hero_sol:    'assets/icon/hero_sol.png',
 
-  // Sprites de animação (para gameplay)
-  btc_idle:    'assets/person/bitcoin-sprites.png',
-  eth_idle:    'assets/person/ethereum-sprites.png',  
-  solana_idle: 'assets/person/solana-sprites.png',
-  real_idle:   'assets/person/real-sprites.png',
-  dollar_idle: 'assets/person/dollar-sprites.png',
+  // Sprites de animação Andar
+  btc_idle:    'assets/person/bitcoin/bitcoin-sprites.png',
+  eth_idle:    'assets/person/ethereum/ethereum-sprites.png',  
+  solana_idle: 'assets/person/solana/solana-sprites.png',
+  real_idle:   'assets/person/globoo-br/real-sprites.png',
+  dollar_idle: 'assets/person/globoo-usd/dollar-sprites.png',
+
+  // Sprites de animação Lutar
 
   // Cenários
-  desert:      'assets/background/desert-wasteland.png',
-  city:        'assets/background/cyberpunk-city.png',
+  desert:      'assets/background/desert-wasteland.png',  
   night:       'assets/background/night-sky.png',
   light:       'assets/background/light-sky.png',
 };
