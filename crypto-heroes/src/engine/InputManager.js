@@ -9,7 +9,7 @@ export default class InputManager{
       d:'Right',ArrowRight:'Right',
       w:'Up',   ArrowUp:'Up',
       s:'Down', ArrowDown:'Down',
-      ' ':'Action', z:'Action'
+      ' ':'Action', z:'Action', Enter:'Action'
     }[k];
   }
   #set(k,val){
