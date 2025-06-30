@@ -26,19 +26,13 @@ const IMAGES = {
   btc_idle:    'assets/person/bitcoin/bitcoin-sprites.png',
   eth_idle:    'assets/person/ethereum/ethereum-sprites.png',    
   gbrl_idle:   'assets/person/globoo-br/real-sprites.png',      
-  gusd_idle:   'assets/person/globoo-usd/dollar-sprites.png',   
-
-  // Sprites de animação Soco (Desenvolvimento)
-  btc_punch:   'assets/person/bitcoin/bitcoin-punch-sprites.png',
-  eth_punch:   'assets/person/ethereum/ethereum-punch-sprites.png',  
-  gbrl_punch:  'assets/person/globoo-br/real-punch-sprites.png',    
-  gusd_punch:  'assets/person/globoo-usd/dollar-punch-sprites.png', 
+  gusd_idle:   'assets/person/globoo-usd/dollar-sprites.png',    
 
   // Sprites de animação Poder (Desenvolvimento)
   btc_power:   'assets/person/bitcoin/bitcoin-power-sprites.png', 
   eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',  
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
-  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png', 
+  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',   
   
   // Objetos
   power: 'assets/object/power.png',
@@ -61,11 +55,8 @@ const SOUNDS = {
 
 // bootstrap
 async function init() {
-  try {
-    console.log('Iniciando carregamento de assets...');
+  try {    
     const assets = await AssetLoader.load({ images: IMAGES, sounds: SOUNDS });
-    console.log('Assets carregados:', assets);
-    
     const input  = new InputManager();
     const scenes = new SceneManager(ctx, input, assets);
     
@@ -73,8 +64,7 @@ async function init() {
     const introScene = new IntroScene(scenes, () => {
       scenes.changeScene(new MenuScene(scenes));
     });
-
-    console.log('Mudando para IntroScene...');
+    
     scenes.changeScene(introScene);
 
     let last = performance.now();
@@ -90,9 +80,8 @@ async function init() {
       }
       scenes.render();
       requestAnimationFrame(gameLoop);
-    }
+    }    
     
-    console.log('Iniciando game loop...');
     requestAnimationFrame(gameLoop);
   } catch(e){
     console.error('Erro ao inicializar o jogo:', e);

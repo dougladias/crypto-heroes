@@ -2,16 +2,15 @@ import Sprite from '../engine/Sprite.js';
 import AssetLoader from '../engine/AssetLoader.js';
 import PowerObject from './PowerObject.js';
 
-export default class Player {constructor(assets, heroId) {
+export default class Player {  constructor(assets, heroId) {
     // Guardar referência dos assets para tocar sons
     this.assets = assets;
     this.heroId = heroId;
     
-    // Criar sprites separadas para cada ação
+    // ✨ ATUALIZADO: Remover sprite de soco - apenas idle e power
     this.sprites = {
-      idle: new Sprite(assets.images[`${heroId}_idle`], 5, 8),
-      punch: new Sprite(assets.images[`${heroId}_punch`], 5, 12),
-      power: new Sprite(assets.images[`${heroId}_power`], 5, 10)
+      idle: new Sprite(assets.images[`${heroId}_idle`], 5, 8),     // 5 colunas, frame rate 8 (suave)
+      power: new Sprite(assets.images[`${heroId}_power`], 5, 8)    // 5 colunas, frame rate 8 (suave)
     };
 
     // Sprite atual (começar com idle)
@@ -24,7 +23,8 @@ export default class Player {constructor(assets, heroId) {
     this.isMoving = false;
     this.facing = 1; // 1 = direita, -1 = esquerda
     this.speed = 250; // Velocidade ajustada para sprites maiores
-      // Estados de ação
+    
+    // Estados de ação
     this.isGrounded = true;
     this.jumpVelocity = 0;
     this.gravity = 1200; // Pixels por segundo²
@@ -36,14 +36,12 @@ export default class Player {constructor(assets, heroId) {
     this.powerObjects = []; // Array para armazenar objetos de poder ativos
     this.powerReleaseTimer = 0; // Timer para soltar o objeto 1s após ativar poder
     
-    // Configuração dos frames - usando sprites específicas
+    // ✨ ATUALIZADO: Configuração dos frames sem soco
     this.frames = {
       idle: 0,                    // Frame parado (primeiro frame)
       walk: [1, 2, 3, 4],        // Frames de caminhada (frames 1-4)
-      punch: [0, 1, 2, 3, 4],    // Todos os frames da sprite de soco
       power: [0, 1, 2, 3, 4]     // Todos os frames da sprite de poder
     };    
-    
   }update(dt, input) { 
     const wasMoving = this.isMoving;
     this.isMoving = false;
@@ -60,32 +58,23 @@ export default class Player {constructor(assets, heroId) {
       this.facing = 1;
     }
       // ✨ USAR TAMANHO REAL DA TELA - aumentado para permitir ir mais para direita
-    this.limitPlayerPosition(1200); // Aumentei de 800 para 1200px
-    
-    // Processar pulo
+    this.limitPlayerPosition(1200); 
+      // Processar pulo
     if (input.wasPressed('Jump') && this.isGrounded) {
       this.jumpVelocity = this.jumpPower;
       this.isGrounded = false;
       AssetLoader.playSound(this.assets.sounds.whoosh, 0.4);
       console.log('Pulando!');
-    }    // Processar ações
-    if (input.wasPressed('Punch') && this.actionTimer <= 0) {
-      this.currentAction = 'punch';
-      this.actionTimer = 400; // 400ms de duração
-      this.currentSprite = this.sprites.punch; // Trocar para sprite de soco
-      this.currentSprite.setFrameRange(this.frames.punch);
-      this.currentSprite.setFrameRate(12);
-      this.currentSprite.reset();
-      AssetLoader.playSound(this.assets.sounds.punch, 0.6);
-      console.log('Soco! - Trocou para sprite de punch');
     }
-      if (input.wasPressed('Power') && this.actionTimer <= 0) {
+    
+    // ✨ ATUALIZADO: Apenas ação de poder (soco removido)
+    if (input.wasPressed('Power') && this.actionTimer <= 0) {
       this.currentAction = 'power';
       this.actionTimer = 600; // 600ms de duração
       this.powerReleaseTimer = 400; // Soltar objeto após 400ms
       this.currentSprite = this.sprites.power; // Trocar para sprite de poder
       this.currentSprite.setFrameRange(this.frames.power);
-      this.currentSprite.setFrameRate(10);
+      this.currentSprite.setFrameRate(8); // Frame rate otimizado
       this.currentSprite.reset();
       AssetLoader.playSound(this.assets.sounds.power, 0.6);
       console.log('Poder! - Trocou para sprite de power, objeto será solto em 400ms');
@@ -155,24 +144,22 @@ export default class Player {constructor(assets, heroId) {
     
     // Renderizar objetos de poder
     this.renderPowerObjects(ctx);
-  }
-  
-  // Soltar objeto de poder
+  }  // Soltar objeto de poder
   releasePowerObject() {
     // Calcular posição do objeto baseado na posição do player e direção
-    const offsetX = this.facing === 1 ? 60 : -60; // Offset para frente do player
+    const offsetX = this.facing === 1 ? 80 : -80; // Offset para frente do player (mais longe)
     const powerX = this.x + offsetX;
     
-    // ✨ AJUSTE AQUI - Usar a altura atual do personagem
-    // Calcular altura atual do personagem (mesmo cálculo do render)
-    const groundY = 540; // Altura do chão base
-    const powerY = groundY - this.y - 40; // Subtrair Y do pulo e ajustar altura do objeto
+    // ✨ CORREÇÃO CRÍTICA: Poder deve sair na altura do meio do personagem
+    // Como o personagem tem 280px de altura, o meio está a 140px da base
+    // No sistema físico: this.y (altura dos pés) + 140 (meio do corpo)
+    const powerY = this.y + 140; // Meio do corpo do personagem
     
     // Criar novo objeto de poder
     const powerObject = new PowerObject(this.assets, powerX, powerY, this.facing);
     this.powerObjects.push(powerObject);
     
-    console.log(`Objeto de poder solto na altura do personagem! Y: ${powerY}, Player Y: ${this.y}`);
+    console.log(`🚀 Poder criado! Player físico(${this.x}, ${this.y}) -> Poder físico(${powerX}, ${powerY})`);
   }
   
   // Atualizar todos os objetos de poder

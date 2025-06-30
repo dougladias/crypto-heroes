@@ -35,15 +35,24 @@ export default class PowerObject {
       console.log('Objeto de poder saiu da tela');
     }
   }
-  
   render(ctx) {
     if (!this.active) return;
+    
+    // ✨ CORREÇÃO IMPORTANTE: O poder deve aparecer na mesma altura do personagem
+    // Usar exatamente o mesmo cálculo que o personagem usa para renderização
+    const groundY = ctx.canvas.height - 340; // Mesma base que os personagens
+    const renderY = groundY - this.y; // Mesma fórmula que o personagem, SEM offset adicional
     
     // Tamanho do objeto de poder
     const width = 80;
     const height = 80;
     
-    this.sprite.draw(ctx, this.x, this.y, width, height, this.direction === -1);
+    this.sprite.draw(ctx, this.x, renderY, width, height, this.direction === -1);
+    
+    // ✨ DEBUG: Log da posição para verificar (apenas os primeiros segundos)
+    if (this.timer < 1000) { // Só logar no primeiro segundo
+      console.log(`🔥 Power render: Físico(${this.x}, ${this.y}) -> Tela(${this.x}, ${renderY}) | GroundY: ${groundY}`);
+    }
   }
   
   // Verificar se ainda está ativo
