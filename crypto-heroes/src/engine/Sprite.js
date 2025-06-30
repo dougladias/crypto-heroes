@@ -39,18 +39,25 @@ export default class Sprite{
     this.frame = this.frameRange.length > 0 ? this.frameRange[0] : 0;
     this.acc = 0;
   }
-  
-  // Definir velocidade da animação
+    // Definir velocidade da animação
   setFrameRate(rate) {
     this.rate = rate;
   }
   
-  step(dt){
+  // Reiniciar animação do início
+  reset() {
+    this.currentFrameIndex = 0;
+    this.frame = this.frameRange.length > 0 ? this.frameRange[0] : 0;
+    this.acc = 0;
+  }
+    step(dt){
     // Só anima se há mais de 1 frame no range
     if(this.frameRange.length <= 1) return;
     
     this.acc += dt;
-    if(this.acc >= 1000/this.rate){
+    const frameTime = 1000/this.rate;
+    
+    if(this.acc >= frameTime){
       this.currentFrameIndex = (this.currentFrameIndex + 1) % this.frameRange.length;
       this.frame = this.frameRange[this.currentFrameIndex];
       this.acc = 0;

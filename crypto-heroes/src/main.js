@@ -23,19 +23,41 @@ const IMAGES = {
   hero_gusd:    'assets/icon/hero_gusd.png',  
   hero_sol:    'assets/icon/hero_sol.png',
 
-  // Sprites de animação Andar
+  // Sprites de animação Andar (Desenvolvimento)
   btc_idle:    'assets/person/bitcoin/bitcoin-sprites.png',
   eth_idle:    'assets/person/ethereum/ethereum-sprites.png',  
   solana_idle: 'assets/person/solana/solana-sprites.png',
   real_idle:   'assets/person/globoo-br/real-sprites.png',
   dollar_idle: 'assets/person/globoo-usd/dollar-sprites.png',
 
-  // Sprites de animação Lutar
+  // Sprites de animação Pular (Desenvolvimento)
+  btc_jump:    'assets/person/bitcoin/bitcoin-jump-sprites.png',
+  eth_jump:    'assets/person/ethereum/ethereum-jump-sprites.png',
+  solana_jump: 'assets/person/solana/solana-jump-sprites.png',
+  real_jump:   'assets/person/globoo-br/real-jump-sprites.png',
+  dollar_jump: 'assets/person/globoo-usd/dollar-jump-sprites.png',
 
-  // Cenários
-  desert:      'assets/background/desert-wasteland.png',  
+  // Sprites de animação Soco (Desenvolvimento)
+  btc_punch:   'assets/person/bitcoin/bitcoin-punch-sprites.png',
+  eth_punch:   'assets/person/ethereum/ethereum-punch-sprites.png',
+  solana_punch: 'assets/person/solana/solana-punch-sprites.png',
+  real_punch:  'assets/person/globoo-br/real-punch-sprites.png',
+  dollar_punch: 'assets/person/globoo-usd/dollar-punch-sprites.png',
+
+  // Sprites de animação Poder (Desenvolvimento)
+  btc_power:   'assets/person/bitcoin/bitcoin-power-sprites.png', 
+  eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',
+  solana_power: 'assets/person/solana/solana-power-sprites.png',  
+  real_power:  'assets/person/globoo-br/real-power-sprites.png',
+  dollar_power: 'assets/person/globoo-usd/dollar-power-sprites.png',
+  // Objetos
+  power: 'assets/object/power.png',
+  platform: 'assets/object/platform.png',
+
+  // Cenários  
   night:       'assets/background/night-sky.png',
   light:       'assets/background/light-sky.png',
+  cyberpunk:   'assets/background/cyberpunk-sky.png',  
 };
 
 const SOUNDS = {

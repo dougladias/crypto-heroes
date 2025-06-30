@@ -16,12 +16,14 @@ export default class IntroScene{
     // Parar música em loop quando sair da cena
     AssetLoader.stopLoopingSound();
     console.log('IntroScene finalizada - música parada');
-  }update(dt,input){
+  }  update(dt,input){
     this.timer += dt;
     if(this.fade > 0) this.fade -= dt/1000; // 1s fade in
     
-    // Debug: verificar se input está funcionando
-    const hasInput = input.isDown('Action') || input.isDown('Left') || input.isDown('Right') || input.isDown('Up');
+    // Verificar QUALQUER tecla pressionada - todas as teclas mapeadas
+    const hasInput = input.isDown('Action') || input.isDown('Left') || input.isDown('Right') || 
+                     input.isDown('Up') || input.isDown('Down') || input.isDown('Jump') || 
+                     input.isDown('Punch') || input.isDown('Power');
     
     // Tentar iniciar áudio com qualquer interação do usuário
     if(!this.audioStarted && hasInput){
