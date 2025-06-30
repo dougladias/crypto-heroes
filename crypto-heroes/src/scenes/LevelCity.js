@@ -12,7 +12,7 @@ export default class LevelCity{
     // Selecionar um cenário aleatório para esta partida
     this.currentBackground = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)];      
     this.platform = {
-      x: 350,          // ← Posição horizontal (esquerda/direita)
+      x: 340,          // ← Posição horizontal (esquerda/direita)
       y: 140,          // ← Altura da plataforma (maior = mais alto)
       width: 480,      // ← LARGURA da plataforma (era 200)
       height: 225,      // ← ALTURA/ESPESSURA da plataforma (era 40)
@@ -38,14 +38,14 @@ export default class LevelCity{
     const platformLeft = this.platform.x;
     const platformRight = this.platform.x + this.platform.width;
     const platformTop = this.platform.y;
-    
-    // Verificar se o player está sobre a plataforma horizontalmente
-    const isOverPlatform = playerRight > platformLeft && playerLeft < platformRight;
-    
-    // ✨ DETECÇÃO ANTECIPADA - Parar ANTES de entrar na plataforma
+      // ✨ AJUSTE: Verificar se o player está sobre a plataforma horizontalmente com margem
+    const marginLeft = 90;  // Margem esquerda - personagem cai antes da borda
+    const marginRight = 90; // Margem direita - personagem cai antes da borda
+    const isOverPlatform = playerRight > (platformLeft + marginLeft) && playerLeft < (platformRight - marginRight);
+      // ✨ DETECÇÃO ANTECIPADA - Parar ANTES de entrar na plataforma
     if (isOverPlatform && !this.player.isGrounded && this.player.jumpVelocity <= 0) {
-      // ✨ DETECÇÃO MAIS ANTECIPADA - parar antes de chegar na plataforma
-      if (this.player.y <= platformTop + 20 && this.player.y >= platformTop) {
+      // ✨ DETECÇÃO MAIS ANTECIPADA - parar BEM antes de chegar na plataforma
+      if (this.player.y <= platformTop + 130 && this.player.y >= platformTop + 100) {
         // ✨ POSICIONAR IMEDIATAMENTE na altura correta
         this.player.y = platformTop + 110; // Altura exata
         this.player.jumpVelocity = 0;      // Parar movimento vertical
