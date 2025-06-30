@@ -1,16 +1,18 @@
 import Player from '../entities/Player.js';
 import AssetLoader from '../engine/AssetLoader.js';
 
-export default class LevelCity{
-  constructor(manager, heroId){
+export default class LevelCity{  constructor(manager, heroId){
     this.mgr  = manager;
     this.player = new Player(manager.assets, heroId);
+    this.heroId = heroId; 
     
-    // Lista de cenários disponíveis
-    this.backgrounds = ['cyberpunk-sky', 'night', 'light'];
+    // ✨ NOVO: Sistema de vidas
+    this.playerLives = 3; 
+      // Lista de cenários disponíveis
+    this.backgrounds = ['cyberpunk', 'night']; 
 
     // Selecionar um cenário aleatório para esta partida
-    this.currentBackground = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)];      
+    this.currentBackground = this.backgrounds[Math.floor(Math.random() * this.backgrounds.length)];
     this.platform = {
       x: 340,          // ← Posição horizontal (esquerda/direita)
       y: 140,          // ← Altura da plataforma (maior = mais alto)
@@ -64,13 +66,8 @@ export default class LevelCity{
         console.log('Player saiu da plataforma');
       }
     }
-  }render(ctx){ 
-  // ✨ CORREÇÃO DO BACKGROUND - usar o nome correto do asset
+  }render(ctx){   // ✨ CORREÇÃO DO BACKGROUND - usar o nome correto do asset
   const currentBg = this.mgr.assets.images[this.currentBackground];
-  
-  // ✨ DEBUG: verificar se o background existe
-  console.log(`Tentando carregar background: ${this.currentBackground}`);
-  console.log(`Background encontrado:`, currentBg);
   
   if(currentBg && currentBg.complete && currentBg.naturalWidth > 0){
     // Escalar a imagem para cobrir toda a tela
@@ -88,12 +85,14 @@ export default class LevelCity{
     // ✨ FALLBACK MELHOR - usar cor baseada no cenário
     this.drawFallbackBackground(ctx);
   }
-  
     // ✨ NOVA RENDERIZAÇÃO - Desenhar a plataforma
     this.drawPlatform(ctx);
     
     // Desenhar o player
-    this.player.render(ctx); 
+    this.player.render(ctx);
+    
+    // ✨ NOVO: Desenhar HUD (logo + vidas) no canto direito
+    this.drawHUD(ctx);
   }
   // ✨ NOVA FUNÇÃO - Desenhar a plataforma usando a imagem
   drawPlatform(ctx) {
@@ -145,12 +144,15 @@ export default class LevelCity{
       );
     }
   }
-  
   drawFallbackBackground(ctx) {
     const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
     
     // Gradientes diferentes para cada cenário
-    switch(this.currentBackground) {    
+    switch(this.currentBackground) {
+      case 'cyberpunk':
+        gradient.addColorStop(0, '#1a0d2e');
+        gradient.addColorStop(1, '#16213e');
+        break;
       case 'night':
         gradient.addColorStop(0, '#001122');
         gradient.addColorStop(1, '#003366');
@@ -160,11 +162,54 @@ export default class LevelCity{
         gradient.addColorStop(1, '#4682B4');
         break;
       default:
-        gradient.addColorStop(0, '#001122');
-        gradient.addColorStop(1, '#003366');
+        gradient.addColorStop(0, '#1a0d2e');
+        gradient.addColorStop(1, '#16213e');
     }
     
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  }
+    // ✨ NOVA FUNÇÃO - Desenhar HUD (logo do herói + vidas)
+  drawHUD(ctx) {
+    const hudX = 20; // ✨ MUDANÇA: Posição X no canto esquerdo
+    const hudY = 20; // Posição Y no topo
+    
+    // Desenhar fundo semi-transparente para a HUD
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(hudX - 10, hudY - 10, 140, 80);
+    
+    // Adicionar borda
+    ctx.strokeStyle = '#FFD700'; // Dourado
+    ctx.lineWidth = 2;
+    ctx.strokeRect(hudX - 10, hudY - 10, 140, 80);
+    
+    // Desenhar logo do herói
+    const heroIcon = this.mgr.assets.images[`hero_${this.heroId}`];
+    if (heroIcon && heroIcon.complete) {
+      ctx.drawImage(heroIcon, hudX, hudY, 50, 50);
+    } else {
+      // Fallback: círculo colorido
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(hudX + 25, hudY + 25, 20, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    // Desenhar texto de vidas
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Vidas: ${this.playerLives}`, hudX + 60, hudY + 20);
+    
+    // Desenhar corações para as vidas
+    for (let i = 0; i < this.playerLives; i++) {
+      const heartX = hudX + 60 + (i * 20);
+      const heartY = hudY + 35;
+      
+      // Desenhar coração simples
+      ctx.fillStyle = '#FF0000';
+      ctx.font = '16px Arial';
+      ctx.fillText('♥', heartX, heartY);
+    }
   }
 }
