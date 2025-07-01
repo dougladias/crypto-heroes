@@ -133,7 +133,7 @@ export default class Player {  constructor(assets, heroId) {
     }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 340; // Posição mais alta no cenário
+    const groundY = ctx.canvas.height - 330; // Posição mais alta no cenário
     const renderY = groundY - this.y; // Subtrair Y do pulo
     
     // Tamanho ideal para sprites 128x128

@@ -37,9 +37,10 @@ const IMAGES = {
   // Objetos
   power: 'assets/object/power.png',
   platform: 'assets/object/platform.png',
+  piso: 'assets/object/piso.png',
+  predio: 'assets/object/predio.png',
 
-  // Cenários  
-  night:       'assets/background/night-sky.png',  
+  // Cenários     
   cyberpunk:   'assets/background/cyberpunk-sky.png',  
 };
 
@@ -53,12 +54,16 @@ const SOUNDS = {
   block:     'assets/audio/block.wav'
 };
 
+// Expor o SceneManager globalmente para depuração (opcional)
+window.gameScenes = null;
+
 // bootstrap
 async function init() {
   try {    
     const assets = await AssetLoader.load({ images: IMAGES, sounds: SOUNDS });
     const input  = new InputManager();
     const scenes = new SceneManager(ctx, input, assets);
+    window.gameScenes = scenes; // Expor para depuração
     
     // fluxo: Intro → Menu → Level
     const introScene = new IntroScene(scenes, () => {
@@ -66,6 +71,7 @@ async function init() {
     });
     
     scenes.changeScene(introScene);
+    window.gameScenes = scenes; // Atribuir à variável global
 
     let last = performance.now();
     let acc  = 0;
