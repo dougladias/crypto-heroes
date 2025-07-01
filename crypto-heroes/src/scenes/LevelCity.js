@@ -2,6 +2,8 @@ import Player from '../entities/Player.js';
 import AssetLoader from '../engine/AssetLoader.js';
 import ScenarioManager from '../scenarios/ScenarioManager.js';
 import EnemyManager from '../entities/EnemyManager.js';
+import ScoreDisplay from '../ui/ScoreDisplay.js';
+import LivesDisplay from '../ui/LivesDisplay.js';
 
 export default class LevelCity {
   constructor(manager, heroId) {
@@ -32,21 +34,28 @@ export default class LevelCity {
       console.log('Tentando inicializar EnemyManager...');
       console.log('Screen dimensions:', screenWidth, 'x', screenHeight);
       console.log('Assets disponíveis:', Object.keys(manager.assets.images));
-      
-      this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
+        this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
       console.log('EnemyManager inicializado com sucesso!');
+      
+      // Configurar callback para quando inimigo escapa
+      this.enemyManager.setEnemyEscapedCallback((enemy) => {
+        this.handleEnemyEscaped(enemy);
+      });
     } catch (error) {
       console.error('Erro ao inicializar EnemyManager:', error);
       console.log('Continuando sem sistema de inimigos...');
       this.enemyManager = null;
     }
-    
-    // Tocar som quando entrar na arena
+      // Tocar som quando entrar na arena
     AssetLoader.playSound(this.mgr.assets.sounds.crowd, 0.4);
+      // Inicializar display de pontuação
+    this.scoreDisplay = new ScoreDisplay(manager.ctx);
+    
+    // Inicializar display de vidas
+    this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);
     
     console.log('LevelCity inicializado completamente');
-  }
-  update(dt, input) {
+  }  update(dt, input) {
     // Atualizar o cenário
     this.scenarioManager.update(dt);
     
@@ -57,13 +66,18 @@ export default class LevelCity {
     if (this.enemyManager) {
       try {
         this.enemyManager.update(dt, this.player);
+        
+        // Atualizar pontuação com base nos inimigos derrotados
+        const gameStats = this.enemyManager.gameStats;
+        if (gameStats && this.scoreDisplay) {
+          this.scoreDisplay.updateScore(gameStats.enemiesDefeated);
+        }
       } catch (error) {
         console.error('Erro ao atualizar EnemyManager:', error);
         this.enemyManager = null; // Desabilitar se der erro
       }
     }
-  }
-    render(ctx) {
+  }    render(ctx) {
     // Renderizar o cenário (background + elementos como piso)
     this.scenarioManager.render(ctx);
     
@@ -78,6 +92,15 @@ export default class LevelCity {
         console.error('Erro ao renderizar EnemyManager:', error);
         this.enemyManager = null; // Desabilitar se der erro
       }
+    }
+      // Renderizar o display de pontuação por último (para ficar por cima)
+    if (this.scoreDisplay) {
+      this.scoreDisplay.render(ctx);
+    }
+    
+    // Renderizar o display de vidas
+    if (this.livesDisplay) {
+      this.livesDisplay.render(ctx);
     }
   }
 
@@ -144,6 +167,34 @@ export default class LevelCity {
     return null;
   }
 
+  // Métodos para controle da pontuação
+  getScore() {
+    if (this.enemyManager) {
+      return this.enemyManager.gameStats.enemiesDefeated;
+    }
+    return 0;
+  }
+
+  resetScore() {
+    if (this.scoreDisplay) {
+      this.scoreDisplay.updateScore(0);
+    }
+  }
+
+  // Método para customizar a aparência da pontuação (usar no console)
+  customizeScore(options) {
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setStyle(options);
+    }
+  }
+
+  // Método para reposicionar a pontuação (usar no console)
+  moveScore(x, y) {
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setPosition(x, y);
+    }
+  }
+
   // Método para ativar/desativar modo debug
   toggleDebugMode() {
     window.DEBUG_MODE = !window.DEBUG_MODE;
@@ -162,6 +213,99 @@ export default class LevelCity {
       }
     } else {
       console.log('EnemyManager não está disponível');
+    }
+  }
+
+  // Métodos para teste e debug do sistema de hit
+  testPowerHit() {
+    if (this.enemyManager && this.player) {
+      console.log('=== TESTE DE HIT COM POWER ===');
+      console.log('Inimigos ativos:', this.enemyManager.enemies.length);
+      console.log('Power objects ativos:', this.player.getPowerObjects().length);
+      
+      // Forçar spawn de um inimigo para teste
+      const testEnemy = this.enemyManager.forceSpawn('gas-goblin');
+      if (testEnemy) {
+        console.log('Inimigo de teste spawnado:', testEnemy);
+        
+        // Forçar criação de um power object
+        this.player.shoot();
+        console.log('Power object criado para teste');
+        
+        setTimeout(() => {
+          console.log(this.getGameStats());
+        }, 1000);
+      }
+    }
+  }
+  // Método simples para testar dano direto
+  testDirectHit() {
+    if (this.enemyManager && this.enemyManager.enemies.length > 0) {
+      const enemy = this.enemyManager.enemies[0];
+      console.log('=== TESTE DE DANO DIRETO ===');
+      console.log('Inimigo antes:', { health: enemy.health, maxHealth: enemy.maxHealth });
+      
+      enemy.takeDamage(25);
+      
+      console.log('Inimigo depois:', { health: enemy.health, maxHealth: enemy.maxHealth });
+    } else {
+      console.log('Nenhum inimigo para testar. Spawnando um...');
+      this.spawnEnemy('gas-goblin');
+    }
+  }
+
+  // Método chamado quando um inimigo escapa
+  handleEnemyEscaped(enemy) {
+    if (this.livesDisplay) {
+      const isGameOver = this.livesDisplay.loseLife();
+      
+      if (isGameOver) {
+        console.log('💀 GAME OVER! Todas as vidas perdidas!');
+        this.triggerGameOver();
+      }
+    }
+  }
+  
+  // Método para game over
+  triggerGameOver() {
+    // Pausar spawning de inimigos
+    if (this.enemyManager) {
+      this.enemyManager.pauseSpawning();
+    }
+    
+    // TODO: Implementar tela de game over na próxima parte
+    console.log('🎮 Preparando tela de Game Over...');
+ }
+
+  // Métodos para controle das vidas
+  getCurrentLives() {
+    if (this.livesDisplay) {
+      return this.livesDisplay.getCurrentLives();
+    }
+    return 0;
+  }
+  
+  resetLives() {
+    if (this.livesDisplay) {
+      this.livesDisplay.resetLives();
+    }
+  }
+  
+  isGameOver() {
+    if (this.livesDisplay) {
+      return this.livesDisplay.isGameOver();
+    }
+    return false;
+  }
+  
+  // Método para testar perda de vida (usar no console)
+  testLoseLife() {
+    if (this.livesDisplay) {
+      const isGameOver = this.livesDisplay.loseLife();
+      console.log(`Vidas restantes: ${this.getCurrentLives()}`);
+      if (isGameOver) {
+        console.log('Game Over triggered!');
+      }
     }
   }
 }

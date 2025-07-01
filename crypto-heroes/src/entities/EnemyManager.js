@@ -1,6 +1,7 @@
 import GasGoblin from './GasGoblin.js';
 import RugReaper from './RugReaper.js';
 import Tucano from './Tucano.js';
+import AssetLoader from '../engine/AssetLoader.js';
 
 export default class EnemyManager {
   constructor(assets, screenWidth = 800, screenHeight = 600) {
@@ -39,11 +40,14 @@ export default class EnemyManager {
         minLevel: 1
       }
     ];
-    
-    // Sistema de dificuldade
+      // Sistema de dificuldade
     this.currentLevel = 1;
     this.enemiesDefeated = 0;
+    this.enemiesEscaped = 0; // Contador de inimigos que escaparam
     this.difficultyMultiplier = 1.0;
+    
+    // Callback para quando inimigo escapa
+    this.onEnemyEscaped = null;
     
     // Configurações de spawn por nível
     this.levelConfigs = {
@@ -54,7 +58,6 @@ export default class EnemyManager {
       5: { spawnInterval: 1000, maxEnemies: 7 }
     };
   }
-
   update(deltaTime, player) {
     // Atualizar todos os inimigos
     this.enemies.forEach(enemy => {
@@ -73,12 +76,23 @@ export default class EnemyManager {
       }
     });
     
-    // Remover inimigos inativos
+    // Verificar colisões entre power objects e inimigos
+    this.checkPowerObjectCollisions(player);
+      // Remover inimigos inativos e detectar inimigos que escaparam
     this.enemies = this.enemies.filter(enemy => {
       if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {
         if (!enemy.isAlive) {
           this.enemiesDefeated++;
           this.checkLevelProgression();
+        } else if (enemy.isAlive && !enemy.isActive) {
+          // Inimigo saiu da tela sem ser derrotado
+          this.enemiesEscaped++;
+          console.log(`⚠️ Inimigo ${enemy.type} escapou! Total escaparam: ${this.enemiesEscaped}`);
+          
+          // Notificar callback se existir
+          if (this.onEnemyEscaped) {
+            this.onEnemyEscaped(enemy);
+          }
         }
         return false;
       }
@@ -268,13 +282,62 @@ export default class EnemyManager {
   get enemyCount() {
     return this.enemies.length;
   }
-
   get gameStats() {
     return {
       level: this.currentLevel,
       enemiesDefeated: this.enemiesDefeated,
+      enemiesEscaped: this.enemiesEscaped,
       activeEnemies: this.enemies.length,
       difficulty: this.difficultyMultiplier
     };
+  }
+  
+  // Método para configurar callback quando inimigo escapa
+  setEnemyEscapedCallback(callback) {
+    this.onEnemyEscaped = callback;
+  }checkPowerObjectCollisions(player) {
+    // Obter power objects do jogador
+    const powerObjects = player.getPowerObjects();
+    
+    // Verificar colisão de cada power object com cada inimigo
+    powerObjects.forEach((powerObject, powerIndex) => {
+      if (!powerObject.isActive()) return;
+      
+      this.enemies.forEach((enemy, enemyIndex) => {
+        if (!enemy.isAlive || !enemy.isActive) return;
+        
+        // Verificar se houve colisão
+        if (this.checkCollision(powerObject, enemy)) {
+          console.log(`🎯 HIT! Power atingiu ${enemy.type}`);
+          
+          // Aplicar dano ao inimigo
+          const damage = 50;
+          const enemyDied = enemy.takeDamage(damage);
+          
+          // Tocar som de hit
+          if (this.assets && this.assets.sounds && this.assets.sounds.punch) {
+            AssetLoader.playSound(this.assets.sounds.punch, 0.3);
+          }
+          
+          // Destruir o power object
+          powerObject.destroy();
+          
+          if (enemyDied) {
+            console.log(`${enemy.type} foi derrotado!`);
+          }
+        }
+      });
+    });
+  }
+  checkCollision(powerObject, enemy) {
+    const powerBounds = powerObject.getBounds();
+    const enemyBounds = enemy.bounds;
+    
+    return (
+      powerBounds.x < enemyBounds.x + enemyBounds.width &&
+      powerBounds.x + powerBounds.width > enemyBounds.x &&
+      powerBounds.y < enemyBounds.y + enemyBounds.height &&
+      powerBounds.y + powerBounds.height > enemyBounds.y
+    );
   }
 }

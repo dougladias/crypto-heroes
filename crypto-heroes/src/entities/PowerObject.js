@@ -63,15 +63,21 @@ export default class PowerObject {
   // Destruir o objeto
   destroy() {
     this.active = false;
-  }
-  
-  // Obter bounds para colisão (se necessário no futuro)
-  getBounds() {
+  }  // Obter bounds para colisão
+  getBounds(ctx = null) {
+    // Usar o mesmo sistema de coordenadas dos inimigos
+    // Inimigos usam: groundY = screenHeight - 330
+    const canvasHeight = ctx ? ctx.canvas.height : 600;
+    const groundY = canvasHeight - 330; // Mesmo que os inimigos
+    
+    // Para PowerObject, o y é relativo ao chão, então a posição real é groundY + this.y
+    const realY = groundY + this.y;
+    
     return {
       x: this.x,
-      y: this.y,
-      width: 32,
-      height: 32
+      y: realY,
+      width: 35,
+      height: 35
     };
   }
 }

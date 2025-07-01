@@ -52,7 +52,7 @@ const IMAGES = {
 
   // Cenários     
   cyberpunk:   'assets/background/cyberpunk-sky.png',
-  gameOver:    'assets/background/game-over.png',
+  gameOver:    'assets/background/game-over.png',  
 };
 
 const SOUNDS = {

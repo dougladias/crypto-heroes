@@ -9,14 +9,14 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     // Movimento
     this.velocityX = config.velocityX || -2; 
     this.velocityY = 0;
-    
-    // Status
+      // Status
     this.health = config.health || 100;
     this.maxHealth = config.health || 100;
     this.damage = config.damage || 10;
     this.isAlive = true;
     this.isActive = true;
-      // Sprite e animação - ajustado para a classe Sprite do projeto
+    
+    // Sprite e animação - ajustado para a classe Sprite do projeto
     this.sprite = new Sprite(
       spriteSheet, 
       config.totalFrames || 4, // Total de frames na sprite sheet
@@ -37,9 +37,7 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     // Limites da tela
     this.screenWidth = config.screenWidth || 800;
     this.screenHeight = config.screenHeight || 600;
-  }
-
-  update(deltaTime) {
+  }  update(deltaTime) {
     if (!this.isAlive || !this.isActive) return;
 
     // Atualizar posição
@@ -60,14 +58,13 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
   updateAnimation(deltaTime) {
     // Usar o método step da classe Sprite para atualizar a animação
     this.sprite.step(deltaTime);
-  }
-  render(ctx) {
+  }  render(ctx) {
     if (!this.isAlive || !this.isActive) return;
 
-    // Renderizar sprite usando o método draw da classe Sprite
+    // Renderizar sprite
     this.sprite.draw(ctx, this.x, this.y, this.width, this.height);
 
-    // Renderizar barra de vida (opcional)
+    // Renderizar barra de vida sempre que tomar dano
     if (this.health < this.maxHealth) {
       this.renderHealthBar(ctx);
     }
@@ -92,19 +89,23 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = 1;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
-  }
-
+  }  // Método para receber dano
   takeDamage(damage) {
     if (!this.isAlive) return false;
-
+    
     this.health -= damage;
+    
+    console.log(`${this.type} recebeu ${damage} de dano. Vida: ${this.health}/${this.maxHealth}`);
+    
+    // Verificar se morreu
     if (this.health <= 0) {
       this.health = 0;
       this.isAlive = false;
       this.onDeath();
-      return true; // Inimigo morreu
+      return true;
     }
-    return false; // Inimigo ainda vivo
+    
+    return false;
   }
 
   onDeath() {
