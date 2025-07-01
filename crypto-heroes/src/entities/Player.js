@@ -38,8 +38,8 @@ export default class Player {
     this.powerReleaseTimer = 0; // Timer para soltar o objeto 1s após ativar poder
       // ✨ ATUALIZADO: Frames para sprite de corrida (sem idle)
     this.frames = {
-      run: [0, 1, 2],      // Frames de corrida (todos os frames)
-      power: [0, 1, 2, 3]     // Todos os frames da sprite de poder
+      run: [0, 1, 2, 3, 4],      // Frames de corrida (todos os frames)
+      power: [0, 1, 2, 3, 4]     // Todos os frames da sprite de poder
     };
     
     // ✨ INICIALIZAR: Começar sempre correndo
@@ -133,7 +133,7 @@ export default class Player {
     }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 330; // Posição mais alta no cenário
+    const groundY = ctx.canvas.height - 340; // Posição mais alta no cenário
     const renderY = groundY - this.y; // Subtrair Y do pulo
     
     // Tamanho ideal para sprites 128x128
