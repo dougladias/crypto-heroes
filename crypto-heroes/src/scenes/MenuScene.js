@@ -2,14 +2,22 @@ import LevelCity from './LevelCity.js';
 import AssetLoader from '../engine/AssetLoader.js';
 
 // Cena de menu para escolher o herói
-export default class MenuScene {
-  constructor(manager){
+export default class MenuScene {  constructor(manager){
     this.mgr   = manager;
-    this.list  = ['gbrl','gusd','btc','eth'];
+    this.list  = ['gbrl','gusd','geur','btc','eth'];
     this.cols  = 2;              
     this.index = 0;              
     this.w     = 128;            
     this.h     = 128;
+    
+    // ✨ Mapeamento dos IDs para nomes das criptomoedas
+    this.heroNames = {
+      'gbrl': 'GLOBOO REAL',
+      'gusd': 'GLOBOO DÓLAR', 
+      'geur': 'GLOBOO EURO',
+      'btc': 'BITCOIN',
+      'eth': 'ETHEREUM'
+    };
   }
 
   onEnter(){}  update(dt,input){
@@ -109,20 +117,20 @@ export default class MenuScene {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.strokeText('SELECT YOUR HERO', canvasWidth / 2, titleY); 
-    
-    // ✨ NOVO LAYOUT: 4 personagens centralizados em linha horizontal
+      // ✨ LAYOUT CENTRALIZADO: 5 personagens em linha horizontal
     const characterSize = 120;
     const centerY = canvasHeight * 0.5; 
+    const spacing = 60; // Espaço entre personagens
     
-    // Calcular espaçamento para 4 personagens centralizados
-    const totalWidth = characterSize * 4 + (3 * 60); 
+    // Calcular espaçamento para 5 personagens centralizados
+    const totalWidth = characterSize * 5 + spacing * 4; // 5 personagens + 4 espaços
     const startX = (canvasWidth - totalWidth) / 2; 
     
-    // Posições para os 4 personagens em linha horizontal
+    // Posições para os 5 personagens em linha horizontal
     const positions = [];
-    for(let i = 0; i < 4; i++) {
+    for(let i = 0; i < 5; i++) {
       positions.push({
-        x: startX + i * (characterSize + 60), 
+        x: startX + i * (characterSize + spacing), 
         y: centerY - characterSize / 2 
       });
     }
@@ -134,13 +142,11 @@ export default class MenuScene {
       
       // Verifica se a imagem do herói está carregada
       const x = pos.x;
-      const y = pos.y;
-
-      // desenha o ícone do herói
+      const y = pos.y;      // desenha o ícone do herói
       ctx.globalAlpha = (i===this.index?1:0.6);
       ctx.drawImage(images[`hero_${id}`], x, y, characterSize, characterSize);
       
-      // desenha o nome do herói abaixo do ícone
+      // desenha a seleção e nome do herói
       if(i===this.index){
         ctx.globalAlpha=1;
         ctx.strokeStyle='#00ff88';
@@ -152,6 +158,25 @@ export default class MenuScene {
         ctx.shadowBlur = 20;
         ctx.strokeRect(x-2, y-2, characterSize+4, characterSize+4);
         ctx.shadowBlur = 0;
+        
+        // ✨ NOVO: Desenhar nome da criptomoeda acima do personagem selecionado
+        const heroName = this.heroNames[id] || id.toUpperCase();
+        const nameY = y - 30; // 30px acima do personagem
+        
+        // Sombra do nome
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.font = '18px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(heroName, x + characterSize/2 + 2, nameY + 2);
+        
+        // Nome principal em verde
+        ctx.fillStyle = '#00ff88';
+        ctx.fillText(heroName, x + characterSize/2, nameY);
+        
+        // Contorno branco do nome
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeText(heroName, x + characterSize/2, nameY);
       }
     });
     

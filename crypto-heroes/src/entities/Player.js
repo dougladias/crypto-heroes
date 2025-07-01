@@ -11,7 +11,7 @@ export default class Player {
     this.assets = assets;
     this.heroId = heroId;    // ✨ ATUALIZADO: Sprite de corrida + power 
     this.sprites = {
-      run: new Sprite(assets.images[`${heroId}_run`], 3, 8),      // Sprite de corrida (4 frames, frame rate 8)
+      run: new Sprite(assets.images[`${heroId}_run`], 5, 8),      // Sprite de corrida (5 frames, frame rate 8)
       power: new Sprite(assets.images[`${heroId}_power`], 5, 8)    // 5 colunas, frame rate 8 (suave)
     };
 

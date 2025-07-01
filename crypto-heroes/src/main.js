@@ -22,18 +22,21 @@ const IMAGES = {
   hero_gbrl:   'assets/icon/hero_gbrl.png',
   hero_gusd:   'assets/icon/hero_gusd.png',
   hero_sol:    'assets/icon/hero_sol.png',
+  hero_geur:   'assets/icon/hero_geur.png',
 
   // Sprites de animação correr (Desenvolvimento)
   btc_run:    'assets/person/bitcoin/bitcoin-sprites.png',
   eth_run:    'assets/person/ethereum/ethereum-sprites.png',    
   gbrl_run:   'assets/person/globoo-br/real-sprites.png',      
-  gusd_run:   'assets/person/globoo-usd/dollar-sprites.png',    
+  gusd_run:   'assets/person/globoo-usd/dollar-sprites.png',
+  geur_run:   'assets/person/globoo-eur/euro-sprites.png',
 
   // Sprites de animação Poder (Desenvolvimento)
   btc_power:   'assets/person/bitcoin/bitcoin-power-sprites.png', 
   eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',  
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
-  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',   
+  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',
+  geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',   
 
   // Objetos
   power: 'assets/object/power.png',
