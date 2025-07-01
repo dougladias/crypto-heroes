@@ -37,7 +37,7 @@ export default class ScenarioManager {
       this.parallaxBuildings = new ParallaxBuildings(this.assets, {
         x: 0,
         y: -30, // Posição Y dos prédios (ajuste conforme necessário)
-        speed: 80, // Velocidade de movimento (pixels por segundo)
+        speed: 50, // Velocidade de movimento (pixels por segundo)
         scale: 1, // Escala dos prédios
         totalFrames: 5, // 5 frames na imagem
         canvasWidth: 800, // Largura do canvas (será ajustada automaticamente)
@@ -52,7 +52,7 @@ export default class ScenarioManager {
     // INICIALIZAR O PISO PARALLAX
     try {
       this.parallaxFloor = new ParallaxFloor(this.assets, {
-        speed: 200, 
+        speed: 250, 
         scaleX: 1.6, // Mesmas configurações do piso anterior
         scaleY: 1,
         offsetY: 470,

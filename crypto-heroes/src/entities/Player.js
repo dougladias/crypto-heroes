@@ -2,22 +2,24 @@ import Sprite from '../engine/Sprite.js';
 import AssetLoader from '../engine/AssetLoader.js';
 import PowerObject from './PowerObject.js';
 
-export default class Player {  constructor(assets, heroId) {
+export default class Player {
+  constructor(assets, heroId) {
+    // ✨ IMPORTANTE: O sprite importado como "_idle" é na verdade um sprite de corrida
+    // Isso permite usar a mesma animação tanto para movimento quanto para idle (primeiro frame)
+    
     // Guardar referência dos assets para tocar sons
     this.assets = assets;
-    this.heroId = heroId;
-    
-    // ✨ ATUALIZADO: Remover sprite de soco - apenas idle e power
+    this.heroId = heroId;    // ✨ ATUALIZADO: Sprite de corrida + power 
     this.sprites = {
-      idle: new Sprite(assets.images[`${heroId}_idle`], 5, 8),     // 5 colunas, frame rate 8 (suave)
+      run: new Sprite(assets.images[`${heroId}_run`], 3, 8),      // Sprite de corrida (4 frames, frame rate 8)
       power: new Sprite(assets.images[`${heroId}_power`], 5, 8)    // 5 colunas, frame rate 8 (suave)
     };
 
-    // Sprite atual (começar com idle)
-    this.currentSprite = this.sprites.idle;
+    // Sprite atual (começar com corrida)
+    this.currentSprite = this.sprites.run;
     
     this.x = 100;
-    this.y = 0; // Para controle de pulo
+    this.y = 0; 
     
     // Estados de movimento
     this.isMoving = false;
@@ -27,21 +29,28 @@ export default class Player {  constructor(assets, heroId) {
     // Estados de ação
     this.isGrounded = true;
     this.jumpVelocity = 0;
-    this.gravity = 1200; // Pixels por segundo²
-    this.jumpPower = 850; // Pixels por segundo    
-    this.currentAction = 'idle';
+    this.gravity = 1200; 
+    this.jumpPower = 850;    
     this.actionTimer = 0;
     
     // Sistema de objetos de poder
     this.powerObjects = []; // Array para armazenar objetos de poder ativos
     this.powerReleaseTimer = 0; // Timer para soltar o objeto 1s após ativar poder
-    
-    // ✨ ATUALIZADO: Configuração dos frames sem soco
+      // ✨ ATUALIZADO: Frames para sprite de corrida (sem idle)
     this.frames = {
-      idle: 0,                    // Frame parado (primeiro frame)
-      walk: [1, 2, 3, 4],        // Frames de caminhada (frames 1-4)
-      power: [0, 1, 2, 3, 4]     // Todos os frames da sprite de poder
-    };    
+      run: [0, 1, 2],      // Frames de corrida (todos os frames)
+      power: [0, 1, 2, 3]     // Todos os frames da sprite de poder
+    };
+    
+    // ✨ INICIALIZAR: Começar sempre correndo
+    this.currentSprite.setFrameRange(this.frames.run);
+    this.currentSprite.setFrameRate(10);
+    this.currentSprite.reset();
+    console.log('🎮 Player inicializado sempre correndo:', {
+      totalFrames: this.currentSprite.totalFrames,
+      frameRange: this.frames.run,
+      currentFrame: this.currentSprite.frame
+    });
   }update(dt, input) { 
     const wasMoving = this.isMoving;
     this.isMoving = false;
@@ -106,30 +115,21 @@ export default class Player {  constructor(assets, heroId) {
     }
     
     // Atualizar objetos de poder
-    this.updatePowerObjects(dt);// Gerenciar animação baseada no estado
+    this.updatePowerObjects(dt);    // Gerenciar animação baseada no estado
     if (this.actionTimer > 0) {
       // Durante ação - apenas animar (já foi configurado quando a ação começou)
       this.currentSprite.step(dt);
-    } else if (this.isMoving) {
-      // Se está se movendo e não há ação ativa
-      const previousAction = this.currentAction;
-      this.currentAction = 'walk';
-      if (previousAction !== 'walk') {
-        this.currentSprite = this.sprites.idle; // Voltar para sprite idle
-        this.currentSprite.setFrameRange(this.frames.walk);
-        this.currentSprite.setFrameRate(8);
-        this.currentSprite.reset();
-        console.log('Iniciando animação de andar');
-      }
-      this.currentSprite.step(dt);
     } else {
-      // Parado - mostrar frame idle
-      if (this.currentAction !== 'idle') {
-        this.currentAction = 'idle';
-        this.currentSprite = this.sprites.idle; // Voltar para sprite idle
-        this.currentSprite.setFrame(this.frames.idle);
-        console.log('Voltando para idle');
+      // ✨ SEMPRE CORRENDO: Manter animação de corrida sempre ativa
+      if (this.currentAction !== 'run') {
+        this.currentAction = 'run';
+        this.currentSprite = this.sprites.run; // Usar sprite de corrida
+        this.currentSprite.setFrameRange(this.frames.run); // Array com 5 frames
+        this.currentSprite.setFrameRate(10); // Frame rate para corrida
+        this.currentSprite.reset();
+        console.log('🏃 Sempre correndo - mantendo animação ativa');
       }
+      this.currentSprite.step(dt); // Sempre animar a corrida
     }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
@@ -187,13 +187,20 @@ export default class Player {  constructor(assets, heroId) {
   getPowerObjects() {
     return this.powerObjects;
   }
-  
-  // Método para debug - chame no console para testar frames específicos
-  debugFrame(frameNumber) {
-    this.currentSprite.setFrame(frameNumber);
-    console.log(`Frame definido para: ${frameNumber}`);
+    // Método para debug - chame no console para testar animação de corrida
+  debugRunAnimation() {
+    console.log('🏃 Forçando animação de corrida...');
+    this.currentSprite = this.sprites.run;
+    this.currentSprite.setFrameRange(this.frames.run);
+    this.currentSprite.setFrameRate(10);
+    this.currentSprite.reset();
+    console.log('Estado após debug:', {
+      currentFrame: this.currentSprite.frame,
+      frameRange: this.currentSprite.frameRange,
+      frameRangeLength: this.currentSprite.frameRange.length
+    });
   }
-  
+
   // Getter para verificar status atual
   get status() {
     return {

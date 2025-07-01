@@ -8,7 +8,7 @@ export default class PowerObject {
     this.x = x;
     this.y = y;
     this.direction = direction; // 1 = direita, -1 = esquerda
-    this.speed = 400; // Velocidade do projétil
+    this.speed = 500; // Velocidade do projétil
     this.active = true;
     this.lifeTime = 3000; // 3 segundos de vida
     this.timer = 0;
@@ -40,12 +40,12 @@ export default class PowerObject {
     
     // ✨ CORREÇÃO IMPORTANTE: O poder deve aparecer na mesma altura do personagem
     // Usar exatamente o mesmo cálculo que o personagem usa para renderização
-    const groundY = ctx.canvas.height - 340; // Mesma base que os personagens
+    const groundY = ctx.canvas.height - 60; // Mesma base que os personagens
     const renderY = groundY - this.y; // Mesma fórmula que o personagem, SEM offset adicional
     
     // Tamanho do objeto de poder
-    const width = 80;
-    const height = 80;
+    const width = 35;
+    const height = 35;
     
     this.sprite.draw(ctx, this.x, renderY, width, height, this.direction === -1);
     

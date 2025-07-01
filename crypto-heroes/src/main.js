@@ -15,33 +15,41 @@ const IMAGES = {
 
   // Tela de seleção de personagem
   selectPerson: 'assets/background/selectPerson.png',
-
+  
   // Ícones circulares dos heróis
   hero_btc:    'assets/icon/hero_btc.png',
   hero_eth:    'assets/icon/hero_eth.png',
   hero_gbrl:   'assets/icon/hero_gbrl.png',
-  hero_gusd:    'assets/icon/hero_gusd.png',
+  hero_gusd:   'assets/icon/hero_gusd.png',
+  hero_sol:    'assets/icon/hero_sol.png',
 
-  // Sprites de animação Andar (Desenvolvimento)
-  btc_idle:    'assets/person/bitcoin/bitcoin-sprites.png',
-  eth_idle:    'assets/person/ethereum/ethereum-sprites.png',    
-  gbrl_idle:   'assets/person/globoo-br/real-sprites.png',      
-  gusd_idle:   'assets/person/globoo-usd/dollar-sprites.png',    
+  // Sprites de animação correr (Desenvolvimento)
+  btc_run:    'assets/person/bitcoin/bitcoin-sprites.png',
+  eth_run:    'assets/person/ethereum/ethereum-sprites.png',    
+  gbrl_run:   'assets/person/globoo-br/real-sprites.png',      
+  gusd_run:   'assets/person/globoo-usd/dollar-sprites.png',    
 
   // Sprites de animação Poder (Desenvolvimento)
   btc_power:   'assets/person/bitcoin/bitcoin-power-sprites.png', 
   eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',  
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
   gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',   
-  
+
   // Objetos
   power: 'assets/object/power.png',
   platform: 'assets/object/platform.png',
   piso: 'assets/object/piso.png',
   predio: 'assets/object/predio.png',
 
+  // Personagens Inimigos
+  enemy_goblin:   'assets/enemy/gas-goblin.png',
+  enemy_reaper:   'assets/enemy/rug-reaper.png',
+  sub:            'assets/enemy/sub.png',
+  tucano:         'assets/enemy/tucano.png',
+
   // Cenários     
-  cyberpunk:   'assets/background/cyberpunk-sky.png',  
+  cyberpunk:   'assets/background/cyberpunk-sky.png',
+  gameOver:    'assets/background/game-over.png',
 };
 
 const SOUNDS = {
