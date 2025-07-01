@@ -3,7 +3,7 @@ import Enemy from './Enemy.js';
 export default class Tucano extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {
     const tucanoConfig = {
-      width: 140,           // Tamanho médio
+      width: 120,           // Tamanho médio
       height: 340,          // Mais alto (pássaro)
       totalFrames: 4,      // Total de frames na sprite
       frameRate: 12,       // Mais rápido na animação (pássaro ágil)

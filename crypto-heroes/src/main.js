@@ -4,6 +4,7 @@ import InputManager from './engine/InputManager.js';
 
 import IntroScene from './scenes/IntroScene.js';
 import MenuScene from './scenes/MenuScene.js';
+import GameOverScene from './scenes/GameOverScene.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');

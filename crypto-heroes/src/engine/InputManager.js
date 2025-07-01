@@ -5,16 +5,39 @@ export default class InputManager{
   constructor(){
     window.addEventListener('keydown', e => this.#set(e.key, true));
     window.addEventListener('keyup',   e => this.#set(e.key, false));
+    
+    // Adicionar suporte para mouse
+    this.mouseX = 0;
+    this.mouseY = 0;
+    
+    window.addEventListener('mousemove', e => {
+      this.mouseX = e.clientX;
+      this.mouseY = e.clientY;
+    });
+    
+    window.addEventListener('mousedown', e => {
+      if (e.button === 0) { // Botão esquerdo
+        this.#set('Click', true);
+      }
+    });
+    
+    window.addEventListener('mouseup', e => {
+      if (e.button === 0) { // Botão esquerdo
+        this.#set('Click', false);
+      }
+    });
   }  #alias(k){
     return {
       a:'Left', ArrowLeft:'Left',
       d:'Right',ArrowRight:'Right',
       w:'Up',   ArrowUp:'Up',
       s:'Down', ArrowDown:'Down',
-      ' ':'Jump', z:'Jump', 
-      Enter:'Action',
+      ' ':'Jump', z:'Jump',  
+      'Enter':'Action',       
+      'Escape':'Escape',     
       x:'Punch',  c:'Power',
-      e:'Punch',  f:'Power'
+      e:'Punch',  f:'Power',
+      'Click':'Click'        
     }[k];
   }#set(k,val){
     const key = this.#alias(k);

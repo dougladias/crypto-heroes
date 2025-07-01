@@ -3,7 +3,7 @@ import Enemy from './Enemy.js';
 export default class GasGoblin extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {
     const goblinConfig = {
-      width: 140,           // Aumentado de 48 para 80
+      width: 120,           // Aumentado de 48 para 80
       height: 300,          // Aumentado de 48 para 80
       totalFrames: 3,      // Total de frames na sprite
       frameRate: 8,        // Velocidade da animação

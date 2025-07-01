@@ -4,6 +4,8 @@ import ScenarioManager from '../scenarios/ScenarioManager.js';
 import EnemyManager from '../entities/EnemyManager.js';
 import ScoreDisplay from '../ui/ScoreDisplay.js';
 import LivesDisplay from '../ui/LivesDisplay.js';
+import GameOverScene from './GameOverScene.js';
+import MenuScene from './MenuScene.js';
 
 export default class LevelCity {
   constructor(manager, heroId) {
@@ -265,16 +267,33 @@ export default class LevelCity {
       }
     }
   }
-  
-  // Método para game over
+    // Método para game over
   triggerGameOver() {
     // Pausar spawning de inimigos
     if (this.enemyManager) {
       this.enemyManager.pauseSpawning();
     }
     
-    // TODO: Implementar tela de game over na próxima parte
-    console.log('🎮 Preparando tela de Game Over...');
+    console.log('🎮 Transicionando para tela de Game Over...');
+    
+    // Criar GameOverScene com callbacks
+    const gameOverScene = new GameOverScene(
+      this.mgr,
+      // Callback para reiniciar o jogo
+      () => {
+        console.log('🔄 Reiniciando jogo...');
+        const newLevelCity = new LevelCity(this.mgr, this.heroId);
+        this.mgr.changeScene(newLevelCity);
+      },
+      // Callback para voltar ao menu
+      () => {
+        console.log('📋 Voltando ao menu principal...');
+        this.mgr.changeScene(new MenuScene(this.mgr));
+      }
+    );
+    
+    // Mudar para a cena de game over
+    this.mgr.changeScene(gameOverScene);
  }
 
   // Métodos para controle das vidas
