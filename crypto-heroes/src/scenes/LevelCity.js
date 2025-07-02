@@ -327,4 +327,45 @@ export default class LevelCity {
       }
     }
   }
+
+  // === MÉTODOS DE DEBUG DO BOSS ===
+  
+  // Testar ataque do boss
+  testBossAttack() {
+    if (this.enemyManager) {
+      return this.enemyManager.testBossAttack();
+    }
+    console.log('❌ EnemyManager não disponível');
+    return false;
+  }
+  
+  // Debug do boss
+  debugBoss() {
+    if (this.enemyManager) {
+      return this.enemyManager.debugBoss();
+    }
+    console.log('❌ EnemyManager não disponível');
+    return null;
+  }
+  
+  // Forçar spawn do boss (para teste)
+  forceBossSpawn() {
+    if (this.enemyManager) {
+      // Limpar inimigos primeiro
+      this.enemyManager.clearAllEnemies();
+      
+      // Simular que chegou a 10 mortos
+      this.enemyManager.enemiesDefeated = 10;
+      this.enemyManager.bossReadyToSpawn = true;
+      this.enemyManager.bossSpawned = true;
+      
+      // Spawnar boss direto
+      this.enemyManager.spawnBoss();
+      
+      console.log('🎯 Boss forçado a spawnar para teste!');
+      return true;
+    }
+    console.log('❌ EnemyManager não disponível');
+    return false;
+  }
 }

@@ -37,11 +37,13 @@ const IMAGES = {
   eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',  
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
   gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',
-  geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',   
+  geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',     
+  
   // Poderes dos heróis
   power_brl: 'assets/object/power-brl.png',
   power_eur: 'assets/object/power-eur.png',
   power_usd: 'assets/object/power-usd.png',
+  power_enemy: 'assets/object/power-enemy.png', 
 
   // Objetos de cenário
   platform: 'assets/object/platform.png',

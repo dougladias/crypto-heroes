@@ -16,42 +16,42 @@ export default class EnemyManager {
     // Configurações de spawn
     this.spawnInterval = 2000; // 2 segundos entre spawns
     this.lastSpawnTime = 0;
-    this.maxEnemies = 5; // Máximo de inimigos na tela      // Tipos de inimigos disponíveis
+    this.maxEnemies = 5; // Máximo de inimigos na tela    
     this.enemyTypes = [
       {
         name: 'gas-goblin',
         class: GasGoblin,
         sprite: 'enemy_goblin',
-        weight: 0.3, // 30% chance
+        weight: 0.4, // 40% chance
         minLevel: 1
       },
       {
         name: 'rug-reaper',
         class: RugReaper,
         sprite: 'enemy_reaper',
-        weight: 0.25, // 25% chance
+        weight: 0.3, // 30% chance
         minLevel: 1
       },
       {
         name: 'tucano',
         class: Tucano,
         sprite: 'tucano',
-        weight: 0.25, // 25% chance
-        minLevel: 1
-      },
-      {
-        name: 'squid-game',
-        class: SquidGame,
-        sprite: 'enemy_squid',
-        weight: 0.2, // 20% chance
+        weight: 0.3, // 30% chance
         minLevel: 1
       }
-    ];
-      // Sistema de dificuldade
+    ];// Sistema de dificuldade
     this.currentLevel = 1;
     this.enemiesDefeated = 0;
     this.enemiesEscaped = 0; // Contador de inimigos que escaparam
     this.difficultyMultiplier = 1.0;
+      // Sistema de Boss
+    this.bossActive = false;
+    this.bossSpawned = false;
+    this.showBossMessage = false;
+    this.bossMessageTimer = 0;
+    this.bossMessageDuration = 2000; // 2 segundos
+    this.enemiesNeededForBoss = 10;
+    this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos
     
     // Callback para quando inimigo escapa
     this.onEnemyEscaped = null;
@@ -65,10 +65,14 @@ export default class EnemyManager {
       5: { spawnInterval: 1000, maxEnemies: 7 }
     };
   }
-  update(deltaTime, player) {
-    // Atualizar todos os inimigos
+  update(deltaTime, player) {    // Atualizar todos os inimigos
     this.enemies.forEach(enemy => {
-      enemy.update(deltaTime);
+      // Passar player para inimigos boss
+      if (enemy.isBoss) {
+        enemy.update(deltaTime, player);
+      } else {
+        enemy.update(deltaTime);
+      }
       
       // Verificar colisão com jogador
       if (enemy.isAlive && enemy.checkCollision(player)) {
@@ -81,15 +85,20 @@ export default class EnemyManager {
           this.handleGasCloudDamage(enemy, player, deltaTime);
         }
       }
+      
+      // Verificar colisões dos poderes do boss
+      if (enemy.isBoss && enemy.getBossPowers) {
+        this.checkBossPowerCollisions(enemy, player);
+      }
     });
     
     // Verificar colisões entre power objects e inimigos
-    this.checkPowerObjectCollisions(player);
-      // Remover inimigos inativos e detectar inimigos que escaparam
+    this.checkPowerObjectCollisions(player);    // Remover inimigos inativos e detectar inimigos que escaparam
     this.enemies = this.enemies.filter(enemy => {
       if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {
         if (!enemy.isAlive) {
           this.enemiesDefeated++;
+          this.checkBossSpawn(); // Verificar se deve spawnar boss
           this.checkLevelProgression();
         } else if (enemy.isAlive && !enemy.isActive) {
           // Inimigo saiu da tela sem ser derrotado
@@ -106,8 +115,21 @@ export default class EnemyManager {
       return true;
     });
     
-    // Spawnar novos inimigos
-    this.handleEnemySpawning(deltaTime);
+    // Atualizar timer da mensagem de boss
+    if (this.showBossMessage) {
+      this.bossMessageTimer -= deltaTime;
+      if (this.bossMessageTimer <= 0) {
+        this.showBossMessage = false;
+        this.spawnBoss(); // Spawnar boss após mensagem
+      }
+    }
+      // Spawnar novos inimigos (apenas se boss não estiver ativo E não estiver pronto para boss)
+    if (!this.bossActive && !this.bossReadyToSpawn) {
+      this.handleEnemySpawning(deltaTime);
+    }
+    
+    // Verificar continuamente se pode spawnar boss (quando chegar a 10 E tela limpa)
+    this.checkBossSpawn();
   }
 
   handleEnemySpawning(deltaTime) {
@@ -225,18 +247,92 @@ export default class EnemyManager {
     this.maxEnemies = levelConfig.maxEnemies;
     
     console.log(`Nível aumentou para ${newLevel}! Dificuldade: ${this.difficultyMultiplier.toFixed(1)}x`);
+  }  checkBossSpawn() {
+    // Primeiro: marcar que chegou a 10 mortos (para parar spawn)
+    if (!this.bossReadyToSpawn && this.enemiesDefeated >= this.enemiesNeededForBoss) {
+      this.bossReadyToSpawn = true;
+      console.log(`🎯 10 inimigos derrotados! Parando spawn e aguardando tela limpa...`);
+    }
+    
+    // Segundo: quando tela estiver limpa, mostrar mensagem de boss
+    if (this.bossReadyToSpawn && 
+        !this.bossSpawned && 
+        this.enemies.length === 0) {
+      
+      this.showBossMessage = true;
+      this.bossMessageTimer = this.bossMessageDuration;
+      this.bossSpawned = true;
+      console.log(`🎯 Tela limpa! Mostrando mensagem de BOSS...`);
+    }
   }
 
+  spawnBoss() {
+    // Spawnar o SquidGame como boss
+    const spriteSheet = this.assets.images['enemy_squid'];
+    
+    if (!spriteSheet) {
+      console.error('Sprite do boss SquidGame não encontrado!');
+      return;
+    }
+      // Posição do boss (centro da tela, voando)
+    const bossX = this.screenWidth * 0.7; // 70% da largura da tela
+    const bossY = this.screenHeight * 0.6; // 60% da altura (mais baixo)
+    
+    // Configuração especial para o boss
+    const bossConfig = {
+      screenWidth: this.screenWidth,
+      screenHeight: this.screenHeight,
+      velocityX: 0, // Boss fica parado voando
+      isBoss: true
+    };
+      const boss = new SquidGame(bossX, bossY, spriteSheet, bossConfig);
+    boss.setAssets(this.assets); // Configurar assets para poderes
+    this.enemies.push(boss);
+    this.bossActive = true;
+    
+    console.log(`👹 Boss SquidGame spawnado na posição (${bossX}, ${bossY})`);
+  }
   render(ctx) {
     // Renderizar todos os inimigos
     this.enemies.forEach(enemy => {
       enemy.render(ctx);
     });
     
+    // Renderizar mensagem de BOSS
+    if (this.showBossMessage) {
+      this.renderBossMessage(ctx);
+    }
+    
     // Renderizar informações de debug (opcional)
     if (window.DEBUG_MODE) {
       this.renderDebugInfo(ctx);
     }
+  }
+
+  renderBossMessage(ctx) {
+    // Fundo semi-transparente
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Texto "BOSS"
+    ctx.fillStyle = '#ff0000'; // Vermelho
+    ctx.font = 'bold 72px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const centerX = ctx.canvas.width / 2;
+    const centerY = ctx.canvas.height / 2;
+    
+    // Sombra do texto
+    ctx.fillStyle = '#000000';
+    ctx.fillText('BOSS', centerX + 3, centerY + 3);
+    
+    // Texto principal
+    ctx.fillStyle = '#ff0000';
+    ctx.fillText('BOSS', centerX, centerY);
+    
+    ctx.restore();
   }
 
   renderDebugInfo(ctx) {
@@ -346,5 +442,82 @@ export default class EnemyManager {
       powerBounds.y < enemyBounds.y + enemyBounds.height &&
       powerBounds.y + powerBounds.height > enemyBounds.y
     );
+  }
+  
+  // Verificar colisões dos poderes do boss com o jogador
+  checkBossPowerCollisions(boss, player) {
+    const bossPowers = boss.getBossPowers();
+    
+    bossPowers.forEach(power => {
+      if (!power.isActive()) return;
+      
+      // Verificar colisão com jogador
+      if (this.checkBossPowerCollision(power, player)) {
+        console.log('💥 Poder do boss atingiu o jogador!');
+        
+        // Aplicar dano ao jogador
+        const damage = power.getDamage();
+        if (player.takeDamage) {
+          player.takeDamage(damage);
+        }
+        
+        // Tocar som de dano
+        if (this.assets && this.assets.sounds && this.assets.sounds.kick) {
+          AssetLoader.playSound(this.assets.sounds.kick, 0.4);
+        }
+        
+        // Destruir o poder
+        power.destroy();
+      }
+    });
+  }
+  
+  // Verificar colisão específica do poder do boss
+  checkBossPowerCollision(power, player) {
+    const powerBounds = power.getBounds();
+    const playerBounds = {
+      x: player.x,
+      y: player.y,
+      width: player.width,
+      height: player.height
+    };
+    
+    return (
+      powerBounds.x < playerBounds.x + playerBounds.width &&
+      powerBounds.x + powerBounds.width > playerBounds.x &&
+      powerBounds.y < playerBounds.y + playerBounds.height &&
+      powerBounds.y + powerBounds.height > playerBounds.y
+    );
+  }
+  
+  // === MÉTODOS DE DEBUG E TESTE ===
+  
+  // Testar ataque do boss
+  testBossAttack() {
+    const boss = this.enemies.find(enemy => enemy.isBoss);
+    if (boss && boss.forceTestAttack) {
+      console.log('🧪 Testando ataque do boss...');
+      const player = { x: 100, y: 400, width: 80, height: 140 }; // Player fictício para teste
+      return boss.forceTestAttack(player);
+    }
+    console.log('❌ Boss não encontrado ou não tem método forceTestAttack');
+    return false;
+  }
+  
+  // Debug do boss
+  debugBoss() {
+    const boss = this.enemies.find(enemy => enemy.isBoss);
+    if (boss) {
+      console.log('🔍 DEBUG BOSS:');
+      console.log('- Boss encontrado:', boss.type);
+      console.log('- É boss:', boss.isBoss);
+      console.log('- Assets configurados:', !!boss.assets);
+      console.log('- Poderes ativos:', boss.bossPowers ? boss.bossPowers.length : 'N/A');
+      console.log('- Última vez que atacou:', boss.lastPowerAttackTime);
+      console.log('- Cooldown:', boss.powerAttackCooldown);
+      return boss;
+    }
+    console.log('❌ Nenhum boss ativo encontrado');
+    return null;
   }
 }

@@ -39,7 +39,7 @@ export default class PowerObject {
     }
     
     // Remover se sair da tela 
-    if (this.x < -50 || this.x > 850) {
+    if (this.x < -50 || this.x > 1000) {
       this.active = false;      
     }
   }
