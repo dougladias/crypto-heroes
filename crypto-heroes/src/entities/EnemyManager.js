@@ -1,6 +1,7 @@
 import GasGoblin from './GasGoblin.js';
 import RugReaper from './RugReaper.js';
 import Tucano from './Tucano.js';
+import SquidGame from './SquidGame.js';
 import AssetLoader from '../engine/AssetLoader.js';
 
 export default class EnemyManager {
@@ -15,28 +16,34 @@ export default class EnemyManager {
     // Configurações de spawn
     this.spawnInterval = 2000; // 2 segundos entre spawns
     this.lastSpawnTime = 0;
-    this.maxEnemies = 5; // Máximo de inimigos na tela
-      // Tipos de inimigos disponíveis
+    this.maxEnemies = 5; // Máximo de inimigos na tela      // Tipos de inimigos disponíveis
     this.enemyTypes = [
       {
         name: 'gas-goblin',
         class: GasGoblin,
         sprite: 'enemy_goblin',
-        weight: 0.4, // 40% chance (reduzido para dar espaço ao tucano)
+        weight: 0.3, // 30% chance
         minLevel: 1
       },
       {
         name: 'rug-reaper',
         class: RugReaper,
         sprite: 'enemy_reaper',
-        weight: 0.3, // 30% chance (reduzido para dar espaço ao tucano)
+        weight: 0.25, // 25% chance
         minLevel: 1
       },
       {
         name: 'tucano',
         class: Tucano,
         sprite: 'tucano',
-        weight: 0.3, // 30% chance (novo inimigo)
+        weight: 0.25, // 25% chance
+        minLevel: 1
+      },
+      {
+        name: 'squid-game',
+        class: SquidGame,
+        sprite: 'enemy_squid',
+        weight: 0.2, // 20% chance
         minLevel: 1
       }
     ];

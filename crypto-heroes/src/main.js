@@ -51,7 +51,7 @@ const IMAGES = {
   // Personagens Inimigos
   enemy_goblin:   'assets/enemy/gas-goblin.png',
   enemy_reaper:   'assets/enemy/rug-reaper.png',
-  sub:            'assets/enemy/sub.png',
+  enemy_squid:    'assets/enemy/squid-game.png',  
   tucano:         'assets/enemy/tucano.png',
 
   // Cenários     
