@@ -3,8 +3,8 @@ import Enemy from './Enemy.js';
 export default class Tucano extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {
     const tucanoConfig = {
-      width: 120,           // Tamanho médio
-      height: 340,          // Mais alto (pássaro)
+      width: 140,           // Tamanho médio
+      height: 180,          // Mais alto (pássaro)
       totalFrames: 4,      // Total de frames na sprite
       frameRate: 12,       // Mais rápido na animação (pássaro ágil)
       cols: 4,             // Assumindo 4 colunas
@@ -22,13 +22,8 @@ export default class Tucano extends Enemy {
     this.velocityY = 0;
     
     // Propriedades específicas do Tucano (SEM sistema de voo)
-    this.isFlying = false;  // Mudado para false
+    this.isFlying = false;  // Mudado para false    
     
-    // Remover todas as propriedades de voo
-    // this.flyingAmplitude = 5;
-    // this.flyingSpeed = 0.01;
-    // this.flyingTimer = 0;
-    // this.originalY = y;
     
     // Simplificar ataques - remover dive bomb
     this.canDiveBomb = false;  // Desabilitar dive bomb

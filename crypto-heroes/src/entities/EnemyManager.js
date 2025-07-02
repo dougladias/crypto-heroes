@@ -176,7 +176,7 @@ export default class EnemyManager {
   }  getRandomSpawnY(enemyType) {
     // Todos os inimigos spawnam na mesma altura (no chão)
     // Baseado na lógica do Player.js: groundY = ctx.canvas.height - 330
-    const groundY = this.screenHeight - 330; // Mesma altura do jogador
+    const groundY = this.screenHeight - 260; // Mesma altura do jogador
     
     // Tucano agora também anda no chão como os outros
     return groundY; // Altura fixa para todos os inimigos

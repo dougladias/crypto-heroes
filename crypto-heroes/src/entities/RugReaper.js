@@ -2,8 +2,8 @@ import Enemy from './Enemy.js';
 
 export default class RugReaper extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {    const reaperConfig = {
-      width: 120,           // Aumentado de 56 para 90
-      height: 300,         // Aumentado de 64 para 100
+      width: 150,           // Aumentado de 56 para 90
+      height: 190,         // Aumentado de 64 para 100
       totalFrames: 3,      // Total de frames na sprite
       frameRate: 8,        // Velocidade da animação
       cols: 3,             // Assumindo 3 colunas
