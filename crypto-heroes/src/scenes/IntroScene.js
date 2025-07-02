@@ -8,14 +8,12 @@ export default class IntroScene{
     this.audioStarted = false;
     this.showPrompt = true;
     this.transitionTimer = 0; // timer para transição
-  }  onEnter(){
-    // Não tentar tocar áudio automaticamente
-    console.log('IntroScene iniciada');
+  }  onEnter(){    
+    
   }
   onExit(){
     // Parar música em loop quando sair da cena
-    AssetLoader.stopLoopingSound();
-    console.log('IntroScene finalizada - música parada');
+    AssetLoader.stopLoopingSound();    
   }  update(dt,input){
     this.timer += dt;
     if(this.fade > 0) this.fade -= dt/1000; // 1s fade in
@@ -26,13 +24,11 @@ export default class IntroScene{
                      input.isDown('Punch') || input.isDown('Power');
     
     // Tentar iniciar áudio com qualquer interação do usuário
-    if(!this.audioStarted && hasInput){
-      console.log('Tecla detectada na IntroScene via InputManager!');
+    if(!this.audioStarted && hasInput){      
       this.audioStarted = true;
       this.showPrompt = false;
       this.transitionTimer = 0; // resetar timer de transição
-      AssetLoader.playLoopingSound(this.mgr.assets.sounds.intro, 0.8);
-      console.log('Áudio em loop iniciado após interação do usuário');
+      AssetLoader.playLoopingSound(this.mgr.assets.sounds.intro, 0.8);      
     }
     
     // Se áudio foi iniciado, contar tempo para transição
@@ -40,8 +36,7 @@ export default class IntroScene{
       this.transitionTimer += dt;
       
       // Após 3 segundos, ir para o menu
-      if(this.transitionTimer >= 3000){
-        console.log('Executando transição automática para menu');
+      if(this.transitionTimer >= 3000){        
         if(this.onComplete) {
           this.onComplete();
         }

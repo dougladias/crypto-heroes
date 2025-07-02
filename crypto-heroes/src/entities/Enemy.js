@@ -93,9 +93,8 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
   takeDamage(damage) {
     if (!this.isAlive) return false;
     
-    this.health -= damage;
+    this.health -= damage;   
     
-    console.log(`${this.type} recebeu ${damage} de dano. Vida: ${this.health}/${this.maxHealth}`);
     
     // Verificar se morreu
     if (this.health <= 0) {
@@ -108,9 +107,8 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     return false;
   }
 
-  onDeath() {
-    // Implementar efeitos de morte específicos em subclasses
-    console.log(`${this.type} foi derrotado!`);
+  // Método chamado quando o inimigo morre (pode ser sobrescrito pelas subclasses)
+  onDeath() {     
   }
 
   // Verificar colisão com jogador
@@ -138,10 +136,6 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     if (!this.canAttack(player)) return false;
 
     this.lastAttackTime = Date.now();
-    
-    // Implementar ataque específico em subclasses
-    console.log(`${this.type} atacou o jogador!`);
-    
     return true;
   }
 

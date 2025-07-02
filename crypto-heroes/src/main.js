@@ -36,8 +36,7 @@ const IMAGES = {
   btc_power:   'assets/person/bitcoin/bitcoin-power-sprites.png', 
   eth_power:   'assets/person/ethereum/ethereum-power-sprites.png',  
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
-  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',
-  geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',     
+  gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',  geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',     
   
   // Poderes dos heróis
   power_brl: 'assets/object/power-brl.png',
@@ -46,7 +45,6 @@ const IMAGES = {
   power_enemy: 'assets/object/power-enemy.png', 
 
   // Objetos de cenário
-  platform: 'assets/object/platform.png',
   piso: 'assets/object/piso.png',
   predio: 'assets/object/predio.png',
 

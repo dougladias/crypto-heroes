@@ -9,7 +9,13 @@ export default class Player {
     
     // Guardar referência dos assets para tocar sons
     this.assets = assets;
-    this.heroId = heroId;    // ✨ ATUALIZADO: Sprite de corrida + power 
+    this.heroId = heroId;    
+
+    // ✨ DIMENSÕES DO PLAYER (para colisões)
+    this.width = 130;   // Largura do player
+    this.height = 280;  // Altura do player
+
+    // ✨ ATUALIZADO: Sprite de corrida + power 
     this.sprites = {
       run: new Sprite(assets.images[`${heroId}_run`], 5, 8),      // Sprite de corrida (5 frames, frame rate 8)
       power: new Sprite(assets.images[`${heroId}_power`], 5, 8)    // 5 colunas, frame rate 8 (suave)
@@ -133,7 +139,7 @@ export default class Player {
     }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 340; // Posição mais alta no cenário
+    const groundY = ctx.canvas.height - 340; // Posição mais baixa no cenário
     const renderY = groundY - this.y; // Subtrair Y do pulo
     
     // Tamanho ideal para sprites 128x128
@@ -187,7 +193,6 @@ export default class Player {
     return this.powerObjects;
   }
 
-  // ...existing code...
   // Método para debug - chame no console para testar animação de corrida
   debugRunAnimation() {
     console.log('🏃 Forçando animação de corrida...');
@@ -211,7 +216,20 @@ export default class Player {
       currentFrame: this.currentSprite.frame,
       currentAction: this.currentAction
     };
-  }  // ✨ LIMITES IGUAIS - Mesma margem dos dois lados
+  }
+  // ✨ BOUNDS PARA COLISÃO (necessário para detectar poderes do boss)
+  get bounds() {
+    const groundY = 600 - 340; // ✨ CORRIGIDO: Usar valor 600 padrão em vez de ctx.canvas.height
+    const renderY = groundY - this.y;
+    
+    return {
+      x: this.x,
+      y: renderY,
+      width: this.width,
+      height: this.height
+    };
+  }
+    // ✨ LIMITES IGUAIS - Mesma margem dos dois lados
   limitPlayerPosition(canvasWidth = 1200) {
     // Tamanho do player (mesmo valor usado no render)
     const playerWidth = 130;
@@ -238,5 +256,14 @@ export default class Player {
     }
       // Debug: remover para performance (descomente se precisar debugar)
     // console.log(`Player X: ${this.x.toFixed(0)}, Limite esquerdo: ${leftLimit}, Limite direito: ${rightLimit.toFixed(0)}, Tela: ${canvasWidth}`);
+  }
+    // Método para receber dano
+  takeDamage(damage) {
+    // Aplicar dano ao player - por enquanto só usar o callback
+    // Você pode expandir aqui para ter sistema de HP se quiser
+    console.log(`Player recebeu ${damage} de dano!`);
+    
+    // Por enquanto, usar o callback existente para simular perda de vida
+    return true;
   }
 }

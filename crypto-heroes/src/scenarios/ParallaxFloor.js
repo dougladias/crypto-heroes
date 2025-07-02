@@ -35,10 +35,6 @@ export default class ParallaxFloor {
         x: -tileWidth * 2 + (i * tileWidth) // Começar bem antes
       });
     }
-    
-    console.log(`PISO FORÇADO: ${numTiles} tiles de ${tileWidth}px`);
-    console.log(`Posições: ${this.floorTiles.map(t => t.x.toFixed(0)).join(', ')}`);
-    console.log(`Imagem carregada: ${image.width}x${image.height}`);
   }
 
   update(dt) {
@@ -67,8 +63,7 @@ export default class ParallaxFloor {
       // Loop mais simples: quando sai completamente, volta para o final
       if (tile.x + tileWidth <= 0) { 
         const rightmostX = Math.max(...this.floorTiles.map(t => t.x));
-        tile.x = rightmostX + tileWidth;
-        console.log(`Tile reposicionado: ${tile.x}`);
+        tile.x = rightmostX + tileWidth;        
       }
     });
   }
@@ -91,19 +86,12 @@ export default class ParallaxFloor {
     
     // FORÇAR RENDERIZAÇÃO - sempre mostrar algo
     let tilesRenderizados = 0;
-    console.log(`Tentando renderizar ${this.floorTiles.length} tiles`);
-    
     this.floorTiles.forEach((tile, index) => {
       const tileWidth = image.width * this.scaleX;
-      
-      console.log(`Tile ${index}: x=${tile.x.toFixed(0)}, y=${floorY.toFixed(0)}`);
-      
       // Renderizar SEMPRE - sem condições
       ctx.drawImage(image, tile.x, floorY, tileWidth, floorHeight);
       tilesRenderizados++;
-    });
-    
-    console.log(`Renderizados: ${tilesRenderizados} tiles`);
+    });   
   }
 
   // Método para ajustar a velocidade
@@ -137,28 +125,21 @@ export default class ParallaxFloor {
 
   // Método de debug para verificar estado dos tiles
   debugTiles() {
-    if (this.floorTiles.length === 0) {
-      console.log('NENHUM TILE INICIALIZADO');
+    if (this.floorTiles.length === 0) {      
       return;
     }
     
     const image = this.assets.images.piso;
-    if (!image) {
-      console.log('IMAGEM DO PISO NÃO CARREGADA');
+    if (!image) {      
       return;
     }
     
-    const tileWidth = image.width * this.scaleX;
-    console.log('=== DEBUG TILES ===');
-    console.log(`Imagem: ${image.width}x${image.height}, escala: ${this.scaleX}x${this.scaleY}`);
-    console.log(`Largura do tile: ${tileWidth}px`);
-    console.log(`Total de tiles: ${this.floorTiles.length}`);
+    const tileWidth = image.width * this.scaleX;  
     
     this.floorTiles.forEach((tile, i) => {
       const endX = tile.x + tileWidth;
       const status = tile.x <= 0 && endX >= 0 ? 'COBRINDO BORDA ESQUERDA' : 
-                    tile.x >= 0 && tile.x <= 1200 ? 'VISÍVEL' : 'FORA DA TELA';
-      console.log(`Tile ${i}: x=${tile.x.toFixed(1)} até ${endX.toFixed(1)} - ${status}`);
+                    tile.x >= 0 && tile.x <= 1200 ? 'VISÍVEL' : 'FORA DA TELA';      
     });
   }
 }

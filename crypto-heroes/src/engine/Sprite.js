@@ -20,9 +20,8 @@ export default class Sprite{
     for(let i = 0; i < frameCount; i++) {
       this.frameRange.push(i);
     }
-    this.currentFrameIndex = 0;
+    this.currentFrameIndex = 0;    
     
-    console.log(`Sprite criada: ${frameCount} frames, ${this.cols}x${this.rows} grade`);
   }
   
   // Definir um frame específico (para estados idle)

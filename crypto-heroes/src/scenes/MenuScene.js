@@ -22,24 +22,16 @@ export default class MenuScene {  constructor(manager){
 
   onEnter(){}  update(dt,input){
     let navigationChanged = false;
-    
-    // Debug: verificar detecção de teclas
-    if(input.isDown('Down')) {
-      console.log('Tecla Down detectada! Index atual:', this.index);
-    }
-
     // Verifica cooldown de teclas
       if(input.isDown('Left')  && this.tick('Left'))  {
       this.index=(this.index+this.list.length-1)%this.list.length;
-      navigationChanged = true;
-      console.log('Navegou para Left, novo index:', this.index);
+      navigationChanged = true;      
     }
 
     // tecla para baixo
     if(input.isDown('Right') && this.tick('Right')) {
       this.index=(this.index+1)%this.list.length;
-      navigationChanged = true;
-      console.log('Navegou para Right, novo index:', this.index);
+      navigationChanged = true;      
     }   
 
     // Tocar som de navegação quando mudar de personagem

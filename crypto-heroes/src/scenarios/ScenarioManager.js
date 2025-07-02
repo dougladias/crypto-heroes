@@ -29,8 +29,7 @@ export default class ScenarioManager {
     this.setupCyberpunkScenario();
   }
 
-  setupCyberpunkScenario() {
-    console.log('Inicializando cenário cyberpunk...');
+  setupCyberpunkScenario() {   
     
     // INICIALIZAR OS PRÉDIOS PARALLAX
     try {
@@ -42,8 +41,7 @@ export default class ScenarioManager {
         totalFrames: 5, // 5 frames na imagem
         canvasWidth: 800, // Largura do canvas (será ajustada automaticamente)
         visible: true
-      });
-      console.log('Parallax buildings inicializados com sucesso');
+      });      
     } catch (error) {
       console.error('Erro ao inicializar parallax buildings:', error);
       this.parallaxBuildings = null;
@@ -59,18 +57,11 @@ export default class ScenarioManager {
         canvasWidth: 800, // Largura real do canvas (do index.html)
         visible: true
         // Loop perfeito: sem parâmetros de ajuste, funciona automaticamente
-      });
-      console.log('Parallax floor inicializado com sucesso');
+      });      
     } catch (error) {
       console.error('Erro ao inicializar parallax floor:', error);
       this.parallaxFloor = null;
-    }
-   
-    
-    console.log('Cenário cyberpunk inicializado completamente');
-
-    // Pode adicionar mais elementos específicos do cyberpunk aqui
-    // Por exemplo: plataformas, etc.
+    }   
   }
 
   getBackgroundType() {
@@ -196,15 +187,13 @@ export default class ScenarioManager {
   // Métodos para controle fino do loop do piso
   adjustFloorExitThreshold(value) {
     if (this.parallaxFloor) {
-      this.parallaxFloor.exitThreshold = value;
-      console.log(`Exit threshold ajustado para: ${value}`);
+      this.parallaxFloor.exitThreshold = value;      
     }
   }
 
   adjustFloorEntryOffset(value) {
     if (this.parallaxFloor) {
-      this.parallaxFloor.entryOffset = value;
-      console.log(`Entry offset ajustado para: ${value}`);
+      this.parallaxFloor.entryOffset = value;      
     }
   }
 
@@ -227,8 +216,7 @@ export default class ScenarioManager {
       }
       if (config.entryOffset !== undefined) {
         this.parallaxFloor.entryOffset = config.entryOffset;
-      }
-      console.log('Controles do piso atualizados:', this.getFloorControls());
+      }      
     }
   }
 
@@ -236,8 +224,7 @@ export default class ScenarioManager {
   debugFloorTiles() {
     if (this.parallaxFloor) {
       this.parallaxFloor.debugTiles();
-    } else {
-      console.log('ParallaxFloor não inicializado');
+    } else {      
     }
   }
 }

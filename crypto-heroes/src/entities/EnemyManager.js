@@ -50,7 +50,7 @@ export default class EnemyManager {
     this.showBossMessage = false;
     this.bossMessageTimer = 0;
     this.bossMessageDuration = 2000; // 2 segundos
-    this.enemiesNeededForBoss = 10;
+    this.enemiesNeededForBoss = 3;
     this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos
     
     // Callback para quando inimigo escapa
@@ -430,32 +430,41 @@ export default class EnemyManager {
         }
       });
     });
-  }
-  checkCollision(powerObject, enemy) {
+  }  checkCollision(powerObject, target) {
     const powerBounds = powerObject.getBounds();
-    const enemyBounds = enemy.bounds;
+    const targetBounds = target.bounds;
     
     return (
-      powerBounds.x < enemyBounds.x + enemyBounds.width &&
-      powerBounds.x + powerBounds.width > enemyBounds.x &&
-      powerBounds.y < enemyBounds.y + enemyBounds.height &&
-      powerBounds.y + powerBounds.height > enemyBounds.y
+      powerBounds.x < targetBounds.x + targetBounds.width &&
+      powerBounds.x + powerBounds.width > targetBounds.x &&
+      powerBounds.y < targetBounds.y + targetBounds.height &&
+      powerBounds.y + powerBounds.height > targetBounds.y
     );
-  }
-    // Verificar colisões dos poderes do boss com o jogador (AGORA USA O MESMO SISTEMA!)
+  }  // Verificar colisões dos poderes do boss com o jogador
   checkBossPowerCollisions(boss, player) {
-    const bossPowers = boss.getPowerObjects(); // USAR getPowerObjects igual ao player!
+    const bossPowers = boss.getPowerObjects();
     
     bossPowers.forEach(power => {
       if (!power.isActive()) return;
       
-      // Usar o mesmo sistema de colisão do player
+      // ✨ DEBUG: Verificar posições
+      const powerBounds = power.getBounds();
+      const playerBounds = player.bounds;
+      
+      console.log(`🎯 DEBUG COLISÃO: 
+        Poder: x=${powerBounds.x.toFixed(0)} y=${powerBounds.y.toFixed(0)} w=${powerBounds.width} h=${powerBounds.height}
+        Player: x=${playerBounds.x.toFixed(0)} y=${playerBounds.y.toFixed(0)} w=${playerBounds.width} h=${playerBounds.height}`);
+      
+      // USAR O MESMO MÉTODO QUE FUNCIONA PARA PLAYER VS INIMIGOS!
       if (this.checkCollision(power, player)) {
-        console.log('💥 Poder do boss atingiu o jogador!');
-          // Aplicar dano ao jogador (IGUAL AO SISTEMA DO PLAYER!)
-        const damage = 25;
+        console.log('💥 BOSS ATINGIU O PLAYER!');
         
-        // Usar o sistema simples: remover uma vida diretamente
+        // Aplicar dano ao jogador usando o método correto
+        if (player.takeDamage) {
+          player.takeDamage(25);
+        }
+        
+        // Usar o sistema de callback para remover vida (fallback)
         if (this.onEnemyEscaped) {
           this.onEnemyEscaped({ type: 'boss_damage' });
         }
@@ -465,57 +474,9 @@ export default class EnemyManager {
           AssetLoader.playSound(this.assets.sounds.kick, 0.4);
         }
         
-        // Destruir o poder (IGUAL AO PLAYER!)
+        // IMPORTANTE: Destruir o poder para que suma
         power.destroy();
       }
     });
-  }
-    // Verificar colisão simples (USAR O MESMO DO PLAYER!)
-  checkCollision(powerObject, target) {
-    const powerBounds = powerObject.getBounds();
-    const targetBounds = target.bounds || {
-      x: target.x,
-      y: target.y,
-      width: target.width,
-      height: target.height
-    };
-    
-    return (
-      powerBounds.x < targetBounds.x + targetBounds.width &&
-      powerBounds.x + powerBounds.width > targetBounds.x &&
-      powerBounds.y < targetBounds.y + targetBounds.height &&
-      powerBounds.y + powerBounds.height > targetBounds.y
-    );
-  }
-  
-  // === MÉTODOS DE DEBUG E TESTE ===
-  
-  // Testar ataque do boss
-  testBossAttack() {
-    const boss = this.enemies.find(enemy => enemy.isBoss);
-    if (boss && boss.forceTestAttack) {
-      console.log('🧪 Testando ataque do boss...');
-      const player = { x: 100, y: 400, width: 80, height: 140 }; // Player fictício para teste
-      return boss.forceTestAttack(player);
-    }
-    console.log('❌ Boss não encontrado ou não tem método forceTestAttack');
-    return false;
-  }
-  
-  // Debug do boss
-  debugBoss() {
-    const boss = this.enemies.find(enemy => enemy.isBoss);
-    if (boss) {
-      console.log('🔍 DEBUG BOSS:');
-      console.log('- Boss encontrado:', boss.type);
-      console.log('- É boss:', boss.isBoss);
-      console.log('- Assets configurados:', !!boss.assets);
-      console.log('- Poderes ativos:', boss.bossPowers ? boss.bossPowers.length : 'N/A');
-      console.log('- Última vez que atacou:', boss.lastPowerAttackTime);
-      console.log('- Cooldown:', boss.powerAttackCooldown);
-      return boss;
-    }
-    console.log('❌ Nenhum boss ativo encontrado');
-    return null;
   }
 }

@@ -22,15 +22,13 @@ export default class PowerObject {
     this.active = true;
     this.lifeTime = 3500; 
     this.timer = 0;   
-  }
-  
-  // Atualizar o objeto de poder
+  }  // Atualizar o objeto de poder
   // dt é o tempo em milissegundos desde a última atualização
   update(dt) {
     if (!this.active) return;
     
-    // Mover o objeto na direção especificada
-    this.x += this.speed * this.direction * dt / 1000;
+    // BOSS SEMPRE ATIRA PARA A ESQUERDA (direção fixa -1)
+    this.x += this.speed * (-1) * dt / 1000; // Direção fixa -1 (esquerda)
     
     // Atualizar timer de vida
     this.timer += dt;
@@ -46,16 +44,14 @@ export default class PowerObject {
   // Renderizar o objeto de poder
   // ctx é o contexto de renderização do canvas
   render(ctx) {
-    if (!this.active) return;
-    
-    // Calcular a posição Y relativa ao chão
+    if (!this.active) return;    // Calcular a posição Y relativa ao chão
     // A base do chão é a mesma que a dos personagens, então usamos o mesmo cálculo
-    const groundY = ctx.canvas.height - -350; // Altura do chão (ajustar conforme necessário)
-    const renderY = groundY - this.y; 
+    const groundY = 600 - (-500); // ✨ AJUSTADO: Poder do boss mais baixo (igual ao player)
+    const renderY = groundY - this.y;
     
     // Tamanho do objeto de poder
-    const width = 70;
-    const height = 70;
+    const width = 60;
+    const height = 60;
     
     // Desenhar o sprite do objeto de poder
     this.sprite.draw(ctx, this.x, renderY, width, height, this.direction === -1);
@@ -73,23 +69,16 @@ export default class PowerObject {
   // Destruir o objeto
   destroy() {
     this.active = false;
-  }  
-  // Obter bounds para colisão
-  getBounds(ctx = null) {
+  }    // Obter bounds para colisão
+  getBounds(ctx = null) {    // ✨ CORREÇÃO CRÍTICA: Sincronizar posição física com posição visual
+    // Usar o mesmo cálculo do render para garantir que a colisão aconteça
+    // exatamente onde o poder aparece visualmente na tela
+    const groundY = 600 - (-500); // ✨ AJUSTADO: Mesma altura do render (sincronizado)
+    const renderY = groundY - this.y;
 
-    // Usar o mesmo sistema de coordenadas dos inimigos para posicionar o objeto de poder
-    // A altura do canvas é necessária para calcular a posição Y relativa ao chão   
-    const canvasHeight = ctx ? ctx.canvas.height : 600;
-    const groundY = canvasHeight - 200; 
-    
-    // Para PowerObject, o y é relativo ao chão, então a posição real é groundY + this.y'
-    const realY = groundY + this.y; 
-    
-    // Retornar os bounds do objeto de poder
-    // A largura e altura são fixas, então não dependem do contexto
     return {
       x: this.x,
-      y: realY,
+      y: renderY, // ✨ USAR renderY em vez de this.y para sincronizar com visual
       width: 35,
       height: 35
     };

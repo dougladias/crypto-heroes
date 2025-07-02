@@ -16,22 +16,18 @@ export default class LivesDisplay {
     this.activeColor = '#00FF00';   // Verde para vidas ativas
     this.lostColor = '#FF0000';     // Vermelho para vidas perdidas
     this.shadowColor = '#000000';
-    
-    console.log(`Sistema de vidas inicializado: ${this.currentLives}/${this.maxLives}`);
   }
   
   loseLife() {
     if (this.currentLives > 0) {
-      this.currentLives--;
-      console.log(`💔 Vida perdida! Vidas restantes: ${this.currentLives}/${this.maxLives}`);
+      this.currentLives--;      
       return this.currentLives === 0; // Retorna true se game over
     }
     return false;
   }
   
   resetLives() {
-    this.currentLives = this.maxLives;
-    console.log(`💖 Vidas resetadas: ${this.currentLives}/${this.maxLives}`);
+    this.currentLives = this.maxLives;    
   }
   
   getCurrentLives() {

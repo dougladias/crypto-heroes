@@ -19,8 +19,7 @@ export default class ParallaxBuildings {
 
   initializeBuildings(canvasWidth) {
     // Se frameWidth ainda não foi calculado, usar um valor padrão
-    if (this.frameWidth === 0) {
-      console.log('FrameWidth não definido, usando valor padrão temporário');
+    if (this.frameWidth === 0) {      
       return; // Não inicializar ainda, esperar o render calcular
     }
     
@@ -31,14 +30,11 @@ export default class ParallaxBuildings {
       return;
     }
     
-    const numBuildings = Math.ceil(canvasWidth / buildingWidth) + 2; // +2 para garantir o loop
-    
-    console.log(`Inicializando ${numBuildings} prédios com largura ${buildingWidth}`);
-    
+    const numBuildings = Math.ceil(canvasWidth / buildingWidth) + 2; 
     for (let i = 0; i < numBuildings; i++) {
       this.buildings.push({
         x: i * buildingWidth,
-        frame: i % this.totalFrames // Cada prédio com um frame diferente e FIXO
+        frame: i % this.totalFrames 
       });
     }
   }
@@ -47,7 +43,7 @@ export default class ParallaxBuildings {
     if (!this.visible) return;
     
     // Mover prédios para a esquerda
-    const moveSpeed = (this.speed * dt) / 1000; // Converter para pixels por frame
+    const moveSpeed = (this.speed * dt) / 1000; 
     
     this.buildings.forEach(building => {
       building.x -= moveSpeed;
@@ -60,9 +56,7 @@ export default class ParallaxBuildings {
       if (building.x + buildingWidth < 0) {
         // Encontrar o prédio mais à direita
         const rightmostX = Math.max(...this.buildings.map(b => b.x));
-        building.x = rightmostX + buildingWidth;
-        // Manter o mesmo frame - NÃO mudar quando reposicionar
-        // building.frame permanece o mesmo
+        building.x = rightmostX + buildingWidth;        
       }
     });
   }

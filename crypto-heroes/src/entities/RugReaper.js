@@ -70,9 +70,7 @@ export default class RugReaper extends Enemy {
     this.dashTimer = this.dashDuration;
     this.lastDashTime = Date.now();
     this.velocityX = this.dashSpeed;
-    this.currentAnimation = 'dash';
-    
-    console.log('Rug Reaper iniciou um dash rápido!');
+    this.currentAnimation = 'dash';   
   }
 
   attack(player) {
@@ -88,9 +86,7 @@ export default class RugReaper extends Enemy {
     }
   }
 
-  slashAttack(player) {
-    console.log('Rug Reaper fez um ataque de lâmina!');
-    
+  slashAttack(player) {   
     this.currentAnimation = 'attack';
     
     // Dano aumentado se estiver dashando
@@ -103,9 +99,7 @@ export default class RugReaper extends Enemy {
     return true;
   }
 
-  stealAttack(player) {
-    console.log('Rug Reaper tentou roubar recursos!');
-    
+  stealAttack(player) {   
     this.currentAnimation = 'steal';
     
     // Dano menor, mas pode roubar recursos
@@ -124,20 +118,15 @@ export default class RugReaper extends Enemy {
   }
 
   performSteal(player) {
-    // Implementar roubo de recursos específicos do jogador
-    console.log(`Rug Reaper roubou ${this.stealAmount} recursos do jogador!`);
-    
     // Exemplo: se o jogador tiver propriedades de recursos
     if (player.coins !== undefined) {
       const stolen = Math.min(this.stealAmount, player.coins);
-      player.coins -= stolen;
-      console.log(`${stolen} moedas foram roubadas!`);
+      player.coins -= stolen;     
     }
     
     if (player.energy !== undefined) {
       const energyStolen = Math.min(5, player.energy);
-      player.energy -= energyStolen;
-      console.log(`${energyStolen} de energia foi drenada!`);
+      player.energy -= energyStolen;      
     }
   }
 
@@ -193,8 +182,7 @@ export default class RugReaper extends Enemy {
 
   takeDamage(damage) {
     // Rug Reaper tem chance de esquivar durante o dash
-    if (this.isDashing && Math.random() < 0.3) {
-      console.log('Rug Reaper esquivou do ataque durante o dash!');
+    if (this.isDashing && Math.random() < 0.3) {      
       return false;
     }
     
@@ -203,10 +191,6 @@ export default class RugReaper extends Enemy {
 
   onDeath() {
     super.onDeath();
-    
-    // Efeito especial de morte: explosion dramática
-    console.log('Rug Reaper foi derrotado com uma explosão sinistra!');
-    
     // Pode deixar recursos para o jogador coletar
     this.dropResources();
   }
@@ -215,9 +199,7 @@ export default class RugReaper extends Enemy {
     // Implementar drop de recursos específicos
     const dropChance = 0.7; // 70% chance de drop
     
-    if (Math.random() < dropChance) {
-      console.log('Rug Reaper deixou recursos valiosos!');
-      // Implementar lógica de drop conforme sistema do jogo
+    if (Math.random() < dropChance) {      
     }
   }
 

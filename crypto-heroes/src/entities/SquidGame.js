@@ -48,12 +48,10 @@ export default class SquidGame extends Enemy {
       // Atualizar apenas a animação usando o sistema do Sprite, sem movimento
       this.updateAnimation(deltaTime);
         // Atualizar poderes (IGUAL AO PLAYER!)
-      this.updatePowerObjects(deltaTime);
-      
-      // Atirar automaticamente
-      if (player && this.assets) {
-        this.autoShoot();
-      }
+      this.updatePowerObjects(deltaTime);    // Atirar automaticamente
+    if (player && this.assets) {
+      this.autoShoot(player);
+    }
       
       // Atualizar ataque de tinta se estiver ativo
       if (this.inkAttackActive) {
@@ -137,33 +135,28 @@ export default class SquidGame extends Enemy {
   
   // Configurar assets
   setAssets(assets) {
-    this.assets = assets;
-    console.log('🎯 Boss assets configurados!');
-  }
-  
-  // Atirar automático (em vez de apertar botão)
-  autoShoot() {
+    this.assets = assets;    
+  }    // Atirar automático (em vez de apertar botão)
+  autoShoot(player) {
     const currentTime = performance.now();
     if (currentTime - this.lastPowerTime >= this.powerCooldown) {
-      this.releasePowerObject();
+      this.releasePowerObject(player);
       this.lastPowerTime = currentTime;
     }
-  }
-  
-  // EXATAMENTE IGUAL AO PLAYER, só que INVERTIDO!
-  releasePowerObject() {
-    if (!this.assets) return;
+  }// CORRIGIDO: Boss atira da sua posição em direção ao player!
+  releasePowerObject(player) {
+    if (!this.assets || !player) {
+      return;
+    }
     
-    // Boss atira para a ESQUERDA (direção -1)
-    const offsetX = -80; // Para a esquerda
-    const powerX = this.x + offsetX;
-    const powerY = this.y + this.height / 2; // Meio do boss
+    // CORREÇÃO: Poder deve PARTIR do boss, não do player
+    const offsetX = -50; // Offset do boss para a esquerda
+    const powerX = this.x + offsetX; // Posição X do BOSS
+    const powerY = this.y + this.height / 2; // Meio do BOSS
     
-    // Criar poder IGUAL ao player (direção -1 = esquerda)
+    // Criar poder que vai do boss em direção ao player (direção -1 = esquerda)
     const powerObject = new PowerObject(this.assets, powerX, powerY, -1);
     this.powerObjects.push(powerObject);
-    
-    console.log(`🔥 BOSS ATIROU! Poder na posição (${powerX}, ${powerY})`);
   }
   
   // IGUAL AO PLAYER!

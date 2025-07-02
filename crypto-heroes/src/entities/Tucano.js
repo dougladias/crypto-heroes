@@ -63,8 +63,6 @@ export default class Tucano extends Enemy {
     // Apenas ataque simples de bico
     return this.peckAttack(player);
   }  peckAttack(player) {
-    console.log('Tucano fez um ataque de bico!');
-    
     this.currentAnimation = 'attack';
     
     // Dano normal (sem sistema de dive bomb)
@@ -137,9 +135,9 @@ export default class Tucano extends Enemy {
     
     return super.takeDamage(damage);
   }  onDeath() {
-    super.onDeath();
-    console.log('Tucano foi derrotado!');
+    super.onDeath();    
   }
+  
   // Propriedades específicas - simplificadas
   get isInWalkingMode() {
     return true; // Sempre caminhando no chão

@@ -36,9 +36,7 @@ export default class GameOverScene {
     ];
     
     // Configurar posições dos botões
-    this.setupButtons();
-    
-    console.log('🎮 GameOverScene inicializada');
+    this.setupButtons();  
   }
   
   setupButtons() {
@@ -105,14 +103,12 @@ export default class GameOverScene {
   
   handleAction(action) {
     switch (action) {
-      case 'restart':
-        console.log('🔄 Reiniciando jogo...');
+      case 'restart':        
         if (this.onRestart) {
           this.onRestart();
         }
         break;
-      case 'menu':
-        console.log('📋 Voltando ao menu...');
+      case 'menu':        
         if (this.onBackToMenu) {
           this.onBackToMenu();
         }

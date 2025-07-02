@@ -44,24 +44,19 @@ export default class AssetLoader {
   }  
   static currentLoopingSource = null;
 
-  static async playSound(asset, volume = 1){
-    console.log('Tentando tocar som:', asset);
+  static async playSound(asset, volume = 1){    
     if(!asset || !asset.ctx || !asset.buffer) {
       console.warn('Asset de som inválido:', asset);
       return;
     }
     
-    const { ctx, buffer } = asset;
-    console.log('Context state:', ctx.state);
+    const { ctx, buffer } = asset;  
     
     // Resume audio context if suspended
-    if (ctx.state === 'suspended') {
-      console.log('Tentando retomar contexto de áudio suspenso...');
+    if (ctx.state === 'suspended') {      
       try {
-        await ctx.resume();
-        console.log('Contexto de áudio retomado. Novo state:', ctx.state);
-      } catch (e) {
-        console.warn('Could not resume audio context:', e);
+        await ctx.resume();        
+      } catch (e) {        
         return;
       }
     }
@@ -72,29 +67,24 @@ export default class AssetLoader {
       const gainNode = ctx.createGain();
       gainNode.gain.value = volume;
       src.connect(gainNode).connect(ctx.destination);
-      src.start(0);
-      console.log('Som tocando com sucesso!');
+      src.start(0);      
     } catch (e) {
       console.warn('Could not play sound:', e);
     }
   }
   
-  static async playLoopingSound(asset, volume = 1) {
-    console.log('Tentando tocar som em loop:', asset);
+  static async playLoopingSound(asset, volume = 1) {    
     if(!asset || !asset.ctx || !asset.buffer) {
       console.warn('Asset de som inválido:', asset);
       return null;
     }
     
-    const { ctx, buffer } = asset;
-    console.log('Context state:', ctx.state);
+    const { ctx, buffer } = asset;    
     
     // Resume audio context if suspended
-    if (ctx.state === 'suspended') {
-      console.log('Tentando retomar contexto de áudio suspenso...');
+    if (ctx.state === 'suspended') {      
       try {
-        await ctx.resume();
-        console.log('Contexto de áudio retomado. Novo state:', ctx.state);
+        await ctx.resume();       
       } catch (e) {
         console.warn('Could not resume audio context:', e);
         return null;
@@ -114,9 +104,8 @@ export default class AssetLoader {
       src.start(0);
       
       // Guardar referência para poder parar depois
-      this.currentLoopingSource = src;
+      this.currentLoopingSource = src;     
       
-      console.log('Som em loop tocando com sucesso!');
       return src;
     } catch (e) {
       console.warn('Could not play looping sound:', e);
@@ -127,8 +116,7 @@ export default class AssetLoader {
   static stopLoopingSound() {
     if (this.currentLoopingSource) {
       try {
-        this.currentLoopingSource.stop();
-        console.log('Som em loop parado');
+        this.currentLoopingSource.stop();       
       } catch (e) {
         console.warn('Erro ao parar som em loop:', e);
       }

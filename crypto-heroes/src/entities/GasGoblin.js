@@ -69,31 +69,14 @@ export default class GasGoblin extends Enemy {
     }
   }
 
-  normalAttack(player) {
-    console.log('Gas Goblin fez um ataque normal!');
-    
+  normalAttack(player) {   
     // Aplicar dano direto
     if (player.takeDamage) {
       player.takeDamage(this.damage);
     }
     
     return true;
-  }
-
-  gasAttack(player) {
-    console.log('Gas Goblin liberou uma nuvem de gás tóxico!');
-    
-    // Ativar nuvem de gás
-    this.gasCloudActive = true;
-    this.gasCloudTimer = this.gasCloudDuration;
-    
-    // Dano inicial
-    if (player.takeDamage) {
-      player.takeDamage(this.damage * 0.7); // Dano inicial menor
-    }
-    
-    return true;
-  }
+  }  
 
   render(ctx) {
     super.render(ctx);
@@ -148,9 +131,7 @@ export default class GasGoblin extends Enemy {
     
     // Efeito especial de morte: pequena explosão de gás
     this.gasCloudActive = true;
-    this.gasCloudTimer = 1000; // 1 segundo após a morte
-    
-    console.log('Gas Goblin explodiu em uma nuvem tóxica!');
+    this.gasCloudTimer = 1000; // 1 segundo após a morte   
   }
 
   // Propriedades específicas

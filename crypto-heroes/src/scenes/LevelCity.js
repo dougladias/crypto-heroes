@@ -8,18 +8,13 @@ import GameOverScene from './GameOverScene.js';
 import MenuScene from './MenuScene.js';
 
 export default class LevelCity {
-  constructor(manager, heroId) {
-    console.log('Iniciando LevelCity com herói:', heroId);
-    
+  constructor(manager, heroId) {   
     this.mgr = manager;
     this.player = new Player(manager.assets, heroId);
     this.heroId = heroId;
     
     // Usar apenas o cenário cyberpunk
     this.currentBackground = 'cyberpunk';
-    
-    console.log(`Cenário selecionado: ${this.currentBackground}`);
-    
     try {
       // Inicializar o gerenciador de cenários
       this.scenarioManager = new ScenarioManager(manager.assets, this.currentBackground);
@@ -31,21 +26,17 @@ export default class LevelCity {
     this.enemyManager = null;
     try {
       const screenWidth = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.width) || 800;
-      const screenHeight = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.height) || 600;
+      const screenHeight = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.height) || 600;     
       
-      console.log('Tentando inicializar EnemyManager...');
-      console.log('Screen dimensions:', screenWidth, 'x', screenHeight);
-      console.log('Assets disponíveis:', Object.keys(manager.assets.images));
-        this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
-      console.log('EnemyManager inicializado com sucesso!');
+      this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
+      
       
       // Configurar callback para quando inimigo escapa
       this.enemyManager.setEnemyEscapedCallback((enemy) => {
         this.handleEnemyEscaped(enemy);
       });
     } catch (error) {
-      console.error('Erro ao inicializar EnemyManager:', error);
-      console.log('Continuando sem sistema de inimigos...');
+      console.error('Erro ao inicializar EnemyManager:', error);      
       this.enemyManager = null;
     }
       // Tocar som quando entrar na arena
@@ -54,9 +45,8 @@ export default class LevelCity {
     this.scoreDisplay = new ScoreDisplay(manager.ctx);
     
     // Inicializar display de vidas
-    this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);
+    this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);    
     
-    console.log('LevelCity inicializado completamente');
   }  update(dt, input) {
     // Atualizar o cenário
     this.scenarioManager.update(dt);
@@ -199,8 +189,7 @@ export default class LevelCity {
 
   // Método para ativar/desativar modo debug
   toggleDebugMode() {
-    window.DEBUG_MODE = !window.DEBUG_MODE;
-    console.log('Debug Mode:', window.DEBUG_MODE ? 'ON' : 'OFF');
+    window.DEBUG_MODE = !window.DEBUG_MODE;    
   }
 
   // Método de teste para spawnar inimigo manualmente
@@ -360,12 +349,10 @@ export default class LevelCity {
       this.enemyManager.bossSpawned = true;
       
       // Spawnar boss direto
-      this.enemyManager.spawnBoss();
+      this.enemyManager.spawnBoss();     
       
-      console.log('🎯 Boss forçado a spawnar para teste!');
       return true;
-    }
-    console.log('❌ EnemyManager não disponível');
+    }    
     return false;
   }
 }
