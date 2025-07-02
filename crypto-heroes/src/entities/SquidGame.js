@@ -1,5 +1,5 @@
 import Enemy from './Enemy.js';
-import BossPowerObject from './BossPowerObject.js';
+import PowerObject from './BossPowerObject.js'; 
 
 export default class SquidGame extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {
@@ -23,12 +23,12 @@ export default class SquidGame extends Enemy {
     this.inkAttackActive = false;
     this.inkAttackDuration = 1500; // 1.5 segundos
     this.inkAttackTimer = 0;
-    this.inkDamage = 8;
-      // Configurações de boss
-    this.isBoss = config.isBoss || false;    // Sistema de poderes do boss
-    this.bossPowers = [];
-    this.powerAttackCooldown = 800; // 0.8 segundos entre ataques de poder (mais rápido)
-    this.lastPowerAttackTime = performance.now() - this.powerAttackCooldown; // Permitir ataque imediato
+    this.inkDamage = 8;    // Configurações de boss
+    this.isBoss = config.isBoss || false;
+      // Sistema de poderes do boss (IGUAL AO PLAYER!)
+    this.powerObjects = []; // MESMO ARRAY DO PLAYER
+    this.powerCooldown = 800; // Cooldown automático
+    this.lastPowerTime = 0;
     this.assets = null; // Será definido quando necessário
     
     // Configurar frames de animação específicos
@@ -45,28 +45,14 @@ export default class SquidGame extends Enemy {
   }  update(deltaTime, player = null) {
     // Se for boss, ficar parado voando
     if (this.isBoss) {
-      // Debug: verificar se está recebendo o player
-      if (!player) {
-        console.log('❌ Boss não recebeu player no update');
-      } else if (!this.assets) {
-        console.log('❌ Boss não tem assets configurados');
-      } else {
-        // Só logar sucesso a cada 2 segundos para não poluir
-        const now = performance.now();
-        if (!this.lastSuccessLog || now - this.lastSuccessLog > 2000) {
-          console.log('✅ Boss tem player e assets configurados');
-          this.lastSuccessLog = now;
-        }
-      }
-      
       // Atualizar apenas a animação usando o sistema do Sprite, sem movimento
       this.updateAnimation(deltaTime);
+        // Atualizar poderes (IGUAL AO PLAYER!)
+      this.updatePowerObjects(deltaTime);
       
-      // Atualizar poderes ativos do boss
-      this.updateBossPowers(deltaTime);
-        // Atacar o jogador com poderes periodicamente
+      // Atirar automaticamente
       if (player && this.assets) {
-        this.tryPowerAttack(player);
+        this.autoShoot();
       }
       
       // Atualizar ataque de tinta se estiver ativo
@@ -119,18 +105,15 @@ export default class SquidGame extends Enemy {
     }
     return false;
   }
-
   render(ctx) {
     super.render(ctx);
     
     // Renderizar efeito de tinta se estiver ativo
     if (this.inkAttackActive) {
       this.renderInkEffect(ctx);
-    }
-    
-    // Renderizar poderes do boss
+    }    // Renderizar poderes (IGUAL AO PLAYER!)
     if (this.isBoss) {
-      this.renderBossPowers(ctx);
+      this.renderPowerObjects(ctx);
     }
   }
 
@@ -150,111 +133,61 @@ export default class SquidGame extends Enemy {
     ctx.fill();
     ctx.restore();
   }
-
-  // === SISTEMA DE PODERES DO BOSS ===
+  // === MÉTODOS IGUAIS AO PLAYER! ===
   
-  // Configurar assets para o boss
+  // Configurar assets
   setAssets(assets) {
     this.assets = assets;
-    console.log('🎯 Boss recebeu assets:', this.assets ? 'OK' : 'FALHOU');
-    
-    // Verificar se tem o sprite necessário
-    if (this.assets && this.assets.images && this.assets.images['power_enemy']) {
-      console.log('✅ Boss tem sprite power_enemy disponível');
-    } else {
-      console.log('❌ Boss NÃO tem sprite power_enemy disponível');
-      if (this.assets && this.assets.images) {
-        console.log('Sprites disponíveis:', Object.keys(this.assets.images));
-      }
-    }
+    console.log('🎯 Boss assets configurados!');
   }
   
-  // Método para forçar um ataque de teste (debug)
-  forceTestAttack(player) {
-    if (player && this.assets) {
-      console.log('🧪 FORÇANDO ataque de teste do boss...');
-      this.launchPowerAttack(player);
-      return true;
-    }
-    console.log('🧪 Não foi possível forçar ataque - faltam prerequisites');
-    return false;
-  }
-  
-  // Atualizar todos os poderes ativos do boss
-  updateBossPowers(deltaTime) {
-    this.bossPowers = this.bossPowers.filter(power => {
-      power.update(deltaTime);
-      return power.isActive();
-    });
-  }
-  
-  // Renderizar todos os poderes do boss
-  renderBossPowers(ctx) {
-    this.bossPowers.forEach(power => {
-      power.render(ctx);
-    });
-  }  // Tentar atacar o jogador com poder
-  tryPowerAttack(player) {
+  // Atirar automático (em vez de apertar botão)
+  autoShoot() {
     const currentTime = performance.now();
-    const timeSinceLastAttack = currentTime - this.lastPowerAttackTime;
+    if (currentTime - this.lastPowerTime >= this.powerCooldown) {
+      this.releasePowerObject();
+      this.lastPowerTime = currentTime;
+    }
+  }
+  
+  // EXATAMENTE IGUAL AO PLAYER, só que INVERTIDO!
+  releasePowerObject() {
+    if (!this.assets) return;
     
-    // Debug logs detalhados
-    if (timeSinceLastAttack >= this.powerAttackCooldown) {
-      console.log('⚡ Boss vai tentar atacar com poder...');
-      console.log(`🕒 Tempo desde último ataque: ${timeSinceLastAttack}ms, Cooldown: ${this.powerAttackCooldown}ms`);
-      this.launchPowerAttack(player);
-      this.lastPowerAttackTime = currentTime;
-    } else {
-      // Log apenas a cada 30 frames para não poluir o console
-      const debugInterval = 500; // 0.5 segundos
-      if (timeSinceLastAttack % debugInterval < 16) { // ~1 frame em 60fps
-        console.log(`⏰ Boss esperando cooldown: ${(this.powerAttackCooldown - timeSinceLastAttack).toFixed(0)}ms restantes`);
+    // Boss atira para a ESQUERDA (direção -1)
+    const offsetX = -80; // Para a esquerda
+    const powerX = this.x + offsetX;
+    const powerY = this.y + this.height / 2; // Meio do boss
+    
+    // Criar poder IGUAL ao player (direção -1 = esquerda)
+    const powerObject = new PowerObject(this.assets, powerX, powerY, -1);
+    this.powerObjects.push(powerObject);
+    
+    console.log(`🔥 BOSS ATIROU! Poder na posição (${powerX}, ${powerY})`);
+  }
+  
+  // IGUAL AO PLAYER!
+  updatePowerObjects(dt) {
+    for (let i = this.powerObjects.length - 1; i >= 0; i--) {
+      const powerObject = this.powerObjects[i];
+      powerObject.update(dt);
+      
+      if (!powerObject.isActive()) {
+        this.powerObjects.splice(i, 1);
       }
     }
   }
-    // Lançar ataque de poder no jogador
-  launchPowerAttack(player) {
-    if (!this.assets) {
-      console.log('❌ Boss não tem assets configurados!');
-      return;
-    }
-    
-    if (!this.assets.images) {
-      console.log('❌ Boss assets não tem images!');
-      return;
-    }
-    
-    if (!this.assets.images['power_enemy']) {
-      console.log('❌ Boss não encontrou sprite power_enemy!');
-      console.log('📋 Assets de imagem disponíveis:', Object.keys(this.assets.images));
-      return;
-    }
-    
-    console.log('🔥 Boss lançou ataque de poder!');
-    
-    const bossX = this.x + this.width / 2;
-    const bossY = this.y + this.height / 2;
-    const playerX = player.x + player.width / 2;
-    const playerY = player.y + player.height / 2;
-    
-    console.log(`📍 Boss pos: (${bossX.toFixed(0)}, ${bossY.toFixed(0)}) -> Player pos: (${playerX.toFixed(0)}, ${playerY.toFixed(0)})`);
-    
-    // Criar poder na posição do boss, mirando no jogador
-    const power = new BossPowerObject(
-      this.assets,
-      bossX,  // Centro do boss X
-      bossY, // Centro do boss Y
-      playerX,  // Centro do jogador X
-      playerY  // Centro do jogador Y
-    );
-    
-    this.bossPowers.push(power);
-    console.log(`💫 Boss criou poder! Total poderes ativos: ${this.bossPowers.length}`);
+  
+  // IGUAL AO PLAYER!
+  renderPowerObjects(ctx) {
+    this.powerObjects.forEach(powerObject => {
+      powerObject.render(ctx);
+    });
   }
   
-  // Obter todos os poderes ativos (para colisão)
-  getBossPowers() {
-    return this.bossPowers;
+  // IGUAL AO PLAYER!
+  getPowerObjects() {
+    return this.powerObjects;
   }
 
   // Propriedades específicas para identificação

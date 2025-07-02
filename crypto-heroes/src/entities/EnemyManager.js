@@ -85,9 +85,8 @@ export default class EnemyManager {
           this.handleGasCloudDamage(enemy, player, deltaTime);
         }
       }
-      
-      // Verificar colisões dos poderes do boss
-      if (enemy.isBoss && enemy.getBossPowers) {
+        // Verificar colisões dos poderes do boss (AGORA USA getPowerObjects!)
+      if (enemy.isBoss && enemy.getPowerObjects) {
         this.checkBossPowerCollisions(enemy, player);
       }
     });
@@ -443,22 +442,22 @@ export default class EnemyManager {
       powerBounds.y + powerBounds.height > enemyBounds.y
     );
   }
-  
-  // Verificar colisões dos poderes do boss com o jogador
+    // Verificar colisões dos poderes do boss com o jogador (AGORA USA O MESMO SISTEMA!)
   checkBossPowerCollisions(boss, player) {
-    const bossPowers = boss.getBossPowers();
+    const bossPowers = boss.getPowerObjects(); // USAR getPowerObjects igual ao player!
     
     bossPowers.forEach(power => {
       if (!power.isActive()) return;
       
-      // Verificar colisão com jogador
-      if (this.checkBossPowerCollision(power, player)) {
+      // Usar o mesmo sistema de colisão do player
+      if (this.checkCollision(power, player)) {
         console.log('💥 Poder do boss atingiu o jogador!');
+          // Aplicar dano ao jogador (IGUAL AO SISTEMA DO PLAYER!)
+        const damage = 25;
         
-        // Aplicar dano ao jogador
-        const damage = power.getDamage();
-        if (player.takeDamage) {
-          player.takeDamage(damage);
+        // Usar o sistema simples: remover uma vida diretamente
+        if (this.onEnemyEscaped) {
+          this.onEnemyEscaped({ type: 'boss_damage' });
         }
         
         // Tocar som de dano
@@ -466,27 +465,26 @@ export default class EnemyManager {
           AssetLoader.playSound(this.assets.sounds.kick, 0.4);
         }
         
-        // Destruir o poder
+        // Destruir o poder (IGUAL AO PLAYER!)
         power.destroy();
       }
     });
   }
-  
-  // Verificar colisão específica do poder do boss
-  checkBossPowerCollision(power, player) {
-    const powerBounds = power.getBounds();
-    const playerBounds = {
-      x: player.x,
-      y: player.y,
-      width: player.width,
-      height: player.height
+    // Verificar colisão simples (USAR O MESMO DO PLAYER!)
+  checkCollision(powerObject, target) {
+    const powerBounds = powerObject.getBounds();
+    const targetBounds = target.bounds || {
+      x: target.x,
+      y: target.y,
+      width: target.width,
+      height: target.height
     };
     
     return (
-      powerBounds.x < playerBounds.x + playerBounds.width &&
-      powerBounds.x + powerBounds.width > playerBounds.x &&
-      powerBounds.y < playerBounds.y + playerBounds.height &&
-      powerBounds.y + powerBounds.height > playerBounds.y
+      powerBounds.x < targetBounds.x + targetBounds.width &&
+      powerBounds.x + powerBounds.width > targetBounds.x &&
+      powerBounds.y < targetBounds.y + targetBounds.height &&
+      powerBounds.y + powerBounds.height > targetBounds.y
     );
   }
   

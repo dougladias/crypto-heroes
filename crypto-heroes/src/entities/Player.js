@@ -182,12 +182,13 @@ export default class Player {
       powerObject.render(ctx);
     });
   }
-  
-  // Obter todos os objetos de poder ativos (para colisões futuras)
+    // Obter todos os objetos de poder ativos (para colisões futuras)
   getPowerObjects() {
     return this.powerObjects;
   }
-    // Método para debug - chame no console para testar animação de corrida
+
+  // ...existing code...
+  // Método para debug - chame no console para testar animação de corrida
   debugRunAnimation() {
     console.log('🏃 Forçando animação de corrida...');
     this.currentSprite = this.sprites.run;

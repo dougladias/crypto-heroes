@@ -1,104 +1,97 @@
 import Sprite from '../engine/Sprite.js';
 
-// Classe BossPowerObject representa um poder especial que o boss atira no jogador
-// É similar ao PowerObject mas vai na direção do jogador e causa dano
-export default class BossPowerObject {
-  constructor(assets, x, y, targetX, targetY) {
+// Classe PowerObject representa um objeto de poder que pode ser coletado pelos heróis
+// Ele é um sprite que se move na direção especificada e desaparece após um tempo
+export default class PowerObject {
+  constructor(assets, x, y, direction) {
     this.assets = assets;
     
-    // Usar o sprite power-enemy para o poder do boss
-    this.sprite = new Sprite(assets.images['power_enemy'], 1, 1);
+    // SISTEMA DE ALEATORIEDADE: Escolher um dos 3 poderes aleatoriamente
+    const powerTypes = ['power_enemy'];
+    const randomPowerType = powerTypes[Math.floor(Math.random() * powerTypes.length)];
     
-    // Posição inicial
+    // Usar o poder aleatório escolhido
+    this.sprite = new Sprite(assets.images[randomPowerType], 1, 1);
+    this.powerType = randomPowerType; // Guardar qual tipo foi escolhido
+    
+    // Posição inicial e direção do objeto
     this.x = x;
     this.y = y;
-    
-    // Calcular direção para o alvo (jogador)
-    const deltaX = targetX - x;
-    const deltaY = targetY - y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-    // Normalizar direção
-    this.directionX = deltaX / distance;
-    this.directionY = deltaY / distance;
-      // Configurações
-    this.speed = 200; // Velocidade mais lenta para ser mais visível
+    this.direction = direction; 
+    this.speed = 500; 
     this.active = true;
-    this.lifeTime = 5000; // 5 segundos de vida (mais tempo)
-    this.timer = 0;
-    this.damage = 25; // Dano que causa no jogador
-    this.width = 50;  // Tamanho maior para ser mais visível
-    this.height = 50;
+    this.lifeTime = 3500; 
+    this.timer = 0;   
   }
-    // Atualizar o poder do boss
+  
+  // Atualizar o objeto de poder
+  // dt é o tempo em milissegundos desde a última atualização
   update(dt) {
     if (!this.active) return;
     
-    // Mover na direção do alvo
-    const moveX = this.speed * this.directionX * dt / 1000;
-    const moveY = this.speed * this.directionY * dt / 1000;
+    // Mover o objeto na direção especificada
+    this.x += this.speed * this.direction * dt / 1000;
     
-    this.x += moveX;
-    this.y += moveY;
-    
-    // Log de movimento a cada 1 segundo aproximadamente
+    // Atualizar timer de vida
     this.timer += dt;
-    if (this.timer % 1000 < dt) { // Log aproximadamente a cada 1 segundo
-      console.log(`💨 Poder do boss movendo: pos(${this.x.toFixed(0)}, ${this.y.toFixed(0)}) direção(${this.directionX.toFixed(2)}, ${this.directionY.toFixed(2)})`);
-    }
-    
-    // Verificar tempo de vida
     if (this.timer >= this.lifeTime) {
-      console.log('⏰ Poder do boss expirou por tempo');
       this.active = false;      
     }
     
-    // Remover se sair muito da tela 
-    if (this.x < -100 || this.x > 1000 || this.y < -100 || this.y > 700) {
-      console.log('🚫 Poder do boss saiu da tela');
+    // Remover se sair da tela 
+    if (this.x < -50 || this.x > 1000) {
       this.active = false;      
     }
   }
-  
-  // Renderizar o poder do boss
+  // Renderizar o objeto de poder
+  // ctx é o contexto de renderização do canvas
   render(ctx) {
     if (!this.active) return;
     
-    // Desenhar o sprite
-    this.sprite.draw(ctx, this.x, this.y, this.width, this.height);
+    // Calcular a posição Y relativa ao chão
+    // A base do chão é a mesma que a dos personagens, então usamos o mesmo cálculo
+    const groundY = ctx.canvas.height - -350; // Altura do chão (ajustar conforme necessário)
+    const renderY = groundY - this.y; 
     
-    // Efeito visual extra (brilho roxo para indicar que é perigoso)
-    ctx.save();
-    ctx.globalAlpha = 0.3;
-    ctx.fillStyle = '#8b00ff'; // Roxo
-    ctx.beginPath();
-    ctx.arc(this.x + this.width/2, this.y + this.height/2, this.width/2 + 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    // Tamanho do objeto de poder
+    const width = 70;
+    const height = 70;
+    
+    // Desenhar o sprite do objeto de poder
+    this.sprite.draw(ctx, this.x, renderY, width, height, this.direction === -1);
+    
+    // Log da posição para verificar (apenas os primeiros segundos)
+    if (this.timer < 1000) {       
+    }
   }
   
-  // Verificar se está ativo
+  // Verificar se ainda está ativo
   isActive() {
     return this.active;
   }
   
-  // Destruir o poder
+  // Destruir o objeto
   destroy() {
     this.active = false;
-  }
-  
+  }  
   // Obter bounds para colisão
-  getBounds() {
+  getBounds(ctx = null) {
+
+    // Usar o mesmo sistema de coordenadas dos inimigos para posicionar o objeto de poder
+    // A altura do canvas é necessária para calcular a posição Y relativa ao chão   
+    const canvasHeight = ctx ? ctx.canvas.height : 600;
+    const groundY = canvasHeight - 200; 
+    
+    // Para PowerObject, o y é relativo ao chão, então a posição real é groundY + this.y'
+    const realY = groundY + this.y; 
+    
+    // Retornar os bounds do objeto de poder
+    // A largura e altura são fixas, então não dependem do contexto
     return {
       x: this.x,
-      y: this.y,
-      width: this.width,
-      height: this.height
+      y: realY,
+      width: 35,
+      height: 35
     };
-  }
-  
-  // Obter dano que causa
-  getDamage() {
-    return this.damage;
   }
 }
