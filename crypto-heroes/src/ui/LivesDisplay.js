@@ -1,4 +1,9 @@
+
+// Exibe as vidas restantes do herói com ícones personalizados
 export default class LivesDisplay {
+
+  // Construtor da classe LivesDisplay
+  // Recebe o contexto do canvas, os assets e o ID do herói
   constructor(ctx, assets, heroId) {
     this.ctx = ctx;
     this.assets = assets;
@@ -9,39 +14,45 @@ export default class LivesDisplay {
     // Configurações visuais
     this.iconSize = 32;
     this.spacing = 40;
-    this.x = 20; // Posição à esquerda
-    this.y = 20; // Posição no topo
+    this.x = 20; 
+    this.y = 20; 
     
     // Cores
-    this.activeColor = '#00FF00';   // Verde para vidas ativas
-    this.lostColor = '#FF0000';     // Vermelho para vidas perdidas
+    this.activeColor = '#00FF00';   
+    this.lostColor = '#FF0000';     
     this.shadowColor = '#000000';
   }
   
+  // Métodos para manipular as vidas  
   loseLife() {
     if (this.currentLives > 0) {
       this.currentLives--;      
-      return this.currentLives === 0; // Retorna true se game over
+      return this.currentLives === 0; 
     }
     return false;
   }
   
+  // Método para restaurar as vidas do herói
   resetLives() {
     this.currentLives = this.maxLives;    
   }
   
+  // Método para definir o número máximo de vidas
   getCurrentLives() {
     return this.currentLives;
   }
   
+  // Método para verificar se o jogo acabou
   isGameOver() {
     return this.currentLives <= 0;
   }
   
+  // Renderiza as vidas no canvas
   render(ctx) {
     // Obter o ícone do herói
     const heroIcon = this.assets.images[`hero_${this.heroId}`];
     
+    // Verificar se o ícone do herói existe
     if (!heroIcon) {
       console.warn(`Ícone do herói não encontrado: hero_${this.heroId}`);
       this.renderFallbackIcons(ctx);
@@ -108,6 +119,7 @@ export default class LivesDisplay {
       ctx.lineWidth = 2;
       ctx.stroke();
       
+      // Resetar sombra
       ctx.restore();
     }
   }

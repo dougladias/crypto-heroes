@@ -2,6 +2,7 @@ import AssetLoader from './engine/AssetLoader.js';
 import SceneManager from './engine/SceneManager.js';
 import InputManager from './engine/InputManager.js';
 import IntroScene from './scenes/IntroScene.js';
+import ControlScene from './scenes/ControlScene.js';
 import MenuScene from './scenes/MenuScene.js';
 
 // ctx é o contexto de renderização do canvas
@@ -16,6 +17,7 @@ const IMAGES = {
 
   // Tela de seleção de personagem
   selectPerson: 'assets/background/selectPerson.png',
+  control: 'assets/background/control.png',
   
   // Ícones circulares dos heróis
   hero_btc:    'assets/icon/hero_btc.png',
@@ -58,6 +60,7 @@ const IMAGES = {
   // Cenários     
   cyberpunk:   'assets/background/cyberpunk-sky.png',
   gameOver:    'assets/background/game-over.png',  
+  gameWin:     'assets/background/game-win.png',  
 };
 
 // Sons do jogo
@@ -82,11 +85,12 @@ async function init() {
     const input  = new InputManager();
     const scenes = new SceneManager(ctx, input, assets);
     window.gameScenes = scenes; // Expor para depuração
-    
-    // fluxo: Intro → Menu → Level
-    // Cena de introdução que leva ao menu
+      // fluxo: Intro → Controles → Menu → Level
+    // Cena de introdução que leva aos controles
     const introScene = new IntroScene(scenes, () => {
-      scenes.changeScene(new MenuScene(scenes));
+      scenes.changeScene(new ControlScene(scenes, () => {
+        scenes.changeScene(new MenuScene(scenes));
+      }));
     });
     
     // Cena de menu que leva ao jogo
@@ -109,6 +113,8 @@ async function init() {
         scenes.update(STEP);
         acc -= STEP;
       }
+      // Renderiza a cena atual
+      // A função render é chamada para desenhar a cena atual no canvas
       scenes.render();
       requestAnimationFrame(gameLoop);
     }    

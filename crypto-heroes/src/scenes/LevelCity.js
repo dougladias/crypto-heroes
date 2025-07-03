@@ -4,7 +4,7 @@ import ScenarioManager from '../scenarios/ScenarioManager.js';
 import EnemyManager from '../entities/EnemyManager.js';
 import ScoreDisplay from '../ui/ScoreDisplay.js';
 import LivesDisplay from '../ui/LivesDisplay.js';
-import GameOverScene from './GameOverScene.js';
+import GameOverScene from './GameScene.js';
 import MenuScene from './MenuScene.js';
 
 export default class LevelCity {
@@ -18,7 +18,7 @@ export default class LevelCity {
     try {
       // Inicializar o gerenciador de cenários
       this.scenarioManager = new ScenarioManager(manager.assets, this.currentBackground);
-      console.log('ScenarioManager inicializado com sucesso');    } catch (error) {
+      } catch (error) {
       console.error('Erro ao inicializar ScenarioManager:', error);
     }
     
@@ -28,12 +28,18 @@ export default class LevelCity {
       const screenWidth = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.width) || 800;
       const screenHeight = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.height) || 600;     
       
+      // Criar o EnemyManager com o tamanho da tela
+      // Isso garante que o EnemyManager saiba o tamanho da arena
       this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
       
-      
-      // Configurar callback para quando inimigo escapa
+        // Configurar callback para quando inimigo escapa
       this.enemyManager.setEnemyEscapedCallback((enemy) => {
         this.handleEnemyEscaped(enemy);
+      });
+      
+      // ✨ NOVO: Configurar callback para quando boss é derrotado
+      this.enemyManager.setBossDefeatedCallback((boss) => {
+        this.handleBossDefeated(boss);
       });
     } catch (error) {
       console.error('Erro ao inicializar EnemyManager:', error);      
@@ -115,10 +121,13 @@ export default class LevelCity {
     this.scenarioManager.adjustFloorEntryOffset(value);
   }
 
+  // Métodos para controle do cenário (usar no console)
   getFloorControls() {
     return this.scenarioManager.getFloorControls();
   }
 
+  // Método para definir controles do piso (usar no console)
+  // Permite customizar como o piso reage ao movimento do player
   setFloorControls(config) {
     this.scenarioManager.setFloorControls(config);
   }
@@ -194,37 +203,27 @@ export default class LevelCity {
 
   // Método de teste para spawnar inimigo manualmente
   testSpawnEnemy() {
-    if (this.enemyManager) {
-      console.log('Tentando spawnar inimigo de teste...');
+    if (this.enemyManager) {      
       const enemy = this.enemyManager.forceSpawn('gas-goblin');
-      if (enemy) {
-        console.log('Inimigo spawnado com sucesso!', enemy);
-      } else {
-        console.log('Falha ao spawnar inimigo');
+      if (enemy) {        
+      } else {        
       }
-    } else {
-      console.log('EnemyManager não está disponível');
+    } else {      
     }
   }
 
   // Métodos para teste e debug do sistema de hit
   testPowerHit() {
-    if (this.enemyManager && this.player) {
-      console.log('=== TESTE DE HIT COM POWER ===');
-      console.log('Inimigos ativos:', this.enemyManager.enemies.length);
-      console.log('Power objects ativos:', this.player.getPowerObjects().length);
+    if (this.enemyManager && this.player) {      
       
       // Forçar spawn de um inimigo para teste
       const testEnemy = this.enemyManager.forceSpawn('gas-goblin');
-      if (testEnemy) {
-        console.log('Inimigo de teste spawnado:', testEnemy);
+      if (testEnemy) {        
         
         // Forçar criação de um power object
-        this.player.shoot();
-        console.log('Power object criado para teste');
+        this.player.shoot();        
         
-        setTimeout(() => {
-          console.log(this.getGameStats());
+        setTimeout(() => {          
         }, 1000);
       }
     }
@@ -232,15 +231,11 @@ export default class LevelCity {
   // Método simples para testar dano direto
   testDirectHit() {
     if (this.enemyManager && this.enemyManager.enemies.length > 0) {
-      const enemy = this.enemyManager.enemies[0];
-      console.log('=== TESTE DE DANO DIRETO ===');
-      console.log('Inimigo antes:', { health: enemy.health, maxHealth: enemy.maxHealth });
+      const enemy = this.enemyManager.enemies[0];     
       
-      enemy.takeDamage(25);
+      enemy.takeDamage(25);      
       
-      console.log('Inimigo depois:', { health: enemy.health, maxHealth: enemy.maxHealth });
-    } else {
-      console.log('Nenhum inimigo para testar. Spawnando um...');
+    } else {      
       this.spawnEnemy('gas-goblin');
     }
   }
@@ -250,38 +245,45 @@ export default class LevelCity {
     if (this.livesDisplay) {
       const isGameOver = this.livesDisplay.loseLife();
       
-      if (isGameOver) {
-        console.log('💀 GAME OVER! Todas as vidas perdidas!');
-        this.triggerGameOver();
-      }
+      // Se perdeu a última vida, chamar game over
+      if (isGameOver) {        
+        this.triggerGameOver();      }
     }
   }
-    // Método para game over
-  triggerGameOver() {
+  
+  // NOVO: Método para quando boss é derrotado (VITÓRIA!)
+  handleBossDefeated(boss) {    
+    this.triggerGameOver(true); 
+  }
+  
+  // Método para game over
+  triggerGameOver(isVictory = false) {
     // Pausar spawning de inimigos
     if (this.enemyManager) {
       this.enemyManager.pauseSpawning();
     }
-    
-    console.log('🎮 Transicionando para tela de Game Over...');
+    // Pausar o player    
+    if (isVictory) {      
+    } else {      
+    }
     
     // Criar GameOverScene com callbacks
     const gameOverScene = new GameOverScene(
       this.mgr,
       // Callback para reiniciar o jogo
-      () => {
-        console.log('🔄 Reiniciando jogo...');
+      () => {        
         const newLevelCity = new LevelCity(this.mgr, this.heroId);
         this.mgr.changeScene(newLevelCity);
       },
       // Callback para voltar ao menu
-      () => {
-        console.log('📋 Voltando ao menu principal...');
+      () => {        
         this.mgr.changeScene(new MenuScene(this.mgr));
-      }
+      },
+      // NOVO: Parâmetro de vitória
+      isVictory
     );
     
-    // Mudar para a cena de game over
+    // Mudar para a cena de game over/vitória
     this.mgr.changeScene(gameOverScene);
  }
 
@@ -293,12 +295,14 @@ export default class LevelCity {
     return 0;
   }
   
+  // Método para perder uma vida (usar no console)
   resetLives() {
     if (this.livesDisplay) {
       this.livesDisplay.resetLives();
     }
   }
   
+  // Método para verificar se o jogo acabou
   isGameOver() {
     if (this.livesDisplay) {
       return this.livesDisplay.isGameOver();
@@ -309,50 +313,9 @@ export default class LevelCity {
   // Método para testar perda de vida (usar no console)
   testLoseLife() {
     if (this.livesDisplay) {
-      const isGameOver = this.livesDisplay.loseLife();
-      console.log(`Vidas restantes: ${this.getCurrentLives()}`);
-      if (isGameOver) {
-        console.log('Game Over triggered!');
+      const isGameOver = this.livesDisplay.loseLife();      
+      if (isGameOver) {        
       }
     }
-  }
-
-  // === MÉTODOS DE DEBUG DO BOSS ===
-  
-  // Testar ataque do boss
-  testBossAttack() {
-    if (this.enemyManager) {
-      return this.enemyManager.testBossAttack();
-    }
-    console.log('❌ EnemyManager não disponível');
-    return false;
-  }
-  
-  // Debug do boss
-  debugBoss() {
-    if (this.enemyManager) {
-      return this.enemyManager.debugBoss();
-    }
-    console.log('❌ EnemyManager não disponível');
-    return null;
-  }
-  
-  // Forçar spawn do boss (para teste)
-  forceBossSpawn() {
-    if (this.enemyManager) {
-      // Limpar inimigos primeiro
-      this.enemyManager.clearAllEnemies();
-      
-      // Simular que chegou a 10 mortos
-      this.enemyManager.enemiesDefeated = 10;
-      this.enemyManager.bossReadyToSpawn = true;
-      this.enemyManager.bossSpawned = true;
-      
-      // Spawnar boss direto
-      this.enemyManager.spawnBoss();     
-      
-      return true;
-    }    
-    return false;
-  }
+  }  
 }

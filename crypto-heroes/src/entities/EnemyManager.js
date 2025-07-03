@@ -14,36 +14,33 @@ export default class EnemyManager {
     this.enemies = [];
     
     // Configurações de spawn
-    this.spawnInterval = 2000; // 2 segundos entre spawns
-    this.lastSpawnTime = 0;
-    this.maxEnemies = 5; // Máximo de inimigos na tela    
+    this.spawnInterval = 2000; 
+    this.lastSpawnTime = 0;    this.maxEnemies = 5;  
+    
     this.enemyTypes = [
       {
         name: 'gas-goblin',
         class: GasGoblin,
         sprite: 'enemy_goblin',
-        weight: 0.4, // 40% chance
-        minLevel: 1
+        weight: 0.4 // 40% chance
       },
       {
         name: 'rug-reaper',
         class: RugReaper,
         sprite: 'enemy_reaper',
-        weight: 0.3, // 30% chance
-        minLevel: 1
+        weight: 0.3 // 30% chance
       },
       {
         name: 'tucano',
         class: Tucano,
         sprite: 'tucano',
-        weight: 0.3, // 30% chance
-        minLevel: 1
+        weight: 0.3 // 30% chance
       }
-    ];// Sistema de dificuldade
-    this.currentLevel = 1;
+    ];
+    
+    // Sistema simples de contadores
     this.enemiesDefeated = 0;
     this.enemiesEscaped = 0; // Contador de inimigos que escaparam
-    this.difficultyMultiplier = 1.0;
       // Sistema de Boss
     this.bossActive = false;
     this.bossSpawned = false;
@@ -52,18 +49,10 @@ export default class EnemyManager {
     this.bossMessageDuration = 2000; // 2 segundos
     this.enemiesNeededForBoss = 3;
     this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos
-    
-    // Callback para quando inimigo escapa
+      // Callback para quando inimigo escapa
     this.onEnemyEscaped = null;
-    
-    // Configurações de spawn por nível
-    this.levelConfigs = {
-      1: { spawnInterval: 2000, maxEnemies: 3 },
-      2: { spawnInterval: 1800, maxEnemies: 4 },
-      3: { spawnInterval: 1500, maxEnemies: 5 },
-      4: { spawnInterval: 1200, maxEnemies: 6 },
-      5: { spawnInterval: 1000, maxEnemies: 7 }
-    };
+      // ✨ NOVO: Callback para quando boss é derrotado
+    this.onBossDefeated = null;
   }
   update(deltaTime, player) {    // Atualizar todos os inimigos
     this.enemies.forEach(enemy => {
@@ -97,8 +86,16 @@ export default class EnemyManager {
       if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {
         if (!enemy.isAlive) {
           this.enemiesDefeated++;
+          
+          // ✨ NOVO: Verificar se um boss foi derrotado
+          if (enemy.isBoss) {
+            console.log('🎉 BOSS DERROTADO! JOGADOR VENCEU!');
+            if (this.onBossDefeated) {
+              this.onBossDefeated(enemy);
+            }
+            this.bossActive = false;
+          }          
           this.checkBossSpawn(); // Verificar se deve spawnar boss
-          this.checkLevelProgression();
         } else if (enemy.isAlive && !enemy.isActive) {
           // Inimigo saiu da tela sem ser derrotado
           this.enemiesEscaped++;
@@ -160,12 +157,9 @@ export default class EnemyManager {
       console.log(`Spawnou ${enemyType.name} na posição (${spawnX}, ${spawnY})`);
     }
   }
-
   selectEnemyType() {
-    // Filtrar inimigos disponíveis para o nível atual
-    const availableTypes = this.enemyTypes.filter(type => 
-      type.minLevel <= this.currentLevel
-    );
+    // Todos os tipos de inimigos estão sempre disponíveis
+    const availableTypes = this.enemyTypes;
     
     if (availableTypes.length === 0) return null;
     
@@ -190,13 +184,12 @@ export default class EnemyManager {
     if (!spriteSheet) {
       console.error(`Sprite não encontrado para ${enemyType.name}: ${enemyType.sprite}`);
       return null;
-    }
-      // Configurações baseadas na dificuldade
+    }    // Configurações simples e fixas
     const config = {
       screenWidth: this.screenWidth,
       screenHeight: this.screenHeight,
-      health: Math.floor(60 * this.difficultyMultiplier), // Corrigida a linha problemática
-      velocityX: -2 * this.difficultyMultiplier
+      health: 60, // Vida fixa para simplicidade
+      velocityX: -2 // Velocidade fixa
     };
     
     // Criar instância do inimigo
@@ -226,31 +219,11 @@ export default class EnemyManager {
       player.takeDamage(damagePerFrame);
     }
   }
-
-  checkLevelProgression() {
-    // Aumentar nível baseado em inimigos derrotados
-    const newLevel = Math.floor(this.enemiesDefeated / 10) + 1;
-    
-    if (newLevel > this.currentLevel) {
-      this.levelUp(newLevel);
-    }
-  }
-
-  levelUp(newLevel) {
-    this.currentLevel = newLevel;
-    this.difficultyMultiplier = 1 + (newLevel - 1) * 0.2; // +20% de dificuldade por nível
-    
-    // Atualizar configurações de spawn
-    const levelConfig = this.levelConfigs[newLevel] || this.levelConfigs[5];
-    this.spawnInterval = levelConfig.spawnInterval;
-    this.maxEnemies = levelConfig.maxEnemies;
-    
-    console.log(`Nível aumentou para ${newLevel}! Dificuldade: ${this.difficultyMultiplier.toFixed(1)}x`);
-  }  checkBossSpawn() {
-    // Primeiro: marcar que chegou a 10 mortos (para parar spawn)
+  checkBossSpawn() {
+    // Primeiro: marcar que chegou a 3 mortos (para parar spawn)
     if (!this.bossReadyToSpawn && this.enemiesDefeated >= this.enemiesNeededForBoss) {
       this.bossReadyToSpawn = true;
-      console.log(`🎯 10 inimigos derrotados! Parando spawn e aguardando tela limpa...`);
+      console.log(`🎯 3 inimigos derrotados! Parando spawn e aguardando tela limpa...`);
     }
     
     // Segundo: quando tela estiver limpa, mostrar mensagem de boss
@@ -333,19 +306,17 @@ export default class EnemyManager {
     
     ctx.restore();
   }
-
   renderDebugInfo(ctx) {
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(10, 10, 200, 120);
+    ctx.fillRect(10, 10, 200, 100);
     
     ctx.fillStyle = 'white';
     ctx.font = '12px Arial';
     ctx.fillText(`Inimigos Ativos: ${this.enemies.length}`, 20, 30);
-    ctx.fillText(`Nível: ${this.currentLevel}`, 20, 50);
-    ctx.fillText(`Derrotados: ${this.enemiesDefeated}`, 20, 70);
-    ctx.fillText(`Dificuldade: ${this.difficultyMultiplier.toFixed(1)}x`, 20, 90);
-    ctx.fillText(`Próximo Spawn: ${Math.max(0, Math.ceil((this.spawnInterval - (Date.now() - this.lastSpawnTime)) / 1000))}s`, 20, 110);
+    ctx.fillText(`Derrotados: ${this.enemiesDefeated}`, 20, 50);
+    ctx.fillText(`Escaparam: ${this.enemiesEscaped}`, 20, 70);
+    ctx.fillText(`Próximo Spawn: ${Math.max(0, Math.ceil((this.spawnInterval - (Date.now() - this.lastSpawnTime)) / 1000))}s`, 20, 90);
     ctx.restore();
   }
 
@@ -353,10 +324,8 @@ export default class EnemyManager {
   pauseSpawning() {
     this.spawnInterval = Infinity;
   }
-
   resumeSpawning() {
-    const levelConfig = this.levelConfigs[this.currentLevel] || this.levelConfigs[5];
-    this.spawnInterval = levelConfig.spawnInterval;
+    this.spawnInterval = 2000; // Voltar ao intervalo padrão
   }
 
   clearAllEnemies() {
@@ -383,20 +352,21 @@ export default class EnemyManager {
 
   get enemyCount() {
     return this.enemies.length;
-  }
-  get gameStats() {
+  }  get gameStats() {
     return {
-      level: this.currentLevel,
       enemiesDefeated: this.enemiesDefeated,
       enemiesEscaped: this.enemiesEscaped,
-      activeEnemies: this.enemies.length,
-      difficulty: this.difficultyMultiplier
+      activeEnemies: this.enemies.length
     };
   }
-  
-  // Método para configurar callback quando inimigo escapa
+    // Método para configurar callback quando inimigo escapa
   setEnemyEscapedCallback(callback) {
     this.onEnemyEscaped = callback;
+  }
+  
+  // ✨ NOVO: Método para configurar callback quando boss é derrotado
+  setBossDefeatedCallback(callback) {
+    this.onBossDefeated = callback;
   }checkPowerObjectCollisions(player) {
     // Obter power objects do jogador
     const powerObjects = player.getPowerObjects();

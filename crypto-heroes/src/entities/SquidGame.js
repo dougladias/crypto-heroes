@@ -11,7 +11,7 @@ export default class SquidGame extends Enemy {
       cols: 3,             // Assumindo 3 colunas
       rows: 1,             // 1 linha
       velocityX: -2.0,     // Um pouco mais rápido que o goblin
-      health: 5000,          // Mais resistente
+      health: 50,          // Mais resistente
       damage: 20,          // Mais dano
       type: 'squid-game',
       attackRange: 50,     // Maior alcance

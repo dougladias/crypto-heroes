@@ -1,7 +1,10 @@
 import LevelCity from './LevelCity.js';
 import AssetLoader from '../engine/AssetLoader.js';
 
-// Cena de menu para escolher o herói
+// Cena de menu para escolher o herói 
+// Carrega os assets necessários e gerencia a seleção do herói
+// Exibe os heróis disponíveis e permite ao jogador escolher um personagem
+// e iniciar o jogo com o personagem selecionado
 export default class MenuScene {  constructor(manager){
     this.mgr   = manager;
     this.list  = ['gbrl','gusd','geur','btc','eth'];
@@ -9,8 +12,8 @@ export default class MenuScene {  constructor(manager){
     this.index = 0;              
     this.w     = 128;            
     this.h     = 128;
-    
-    // ✨ Mapeamento dos IDs para nomes das criptomoedas
+
+    // Mapeamento dos nomes para personagens das criptomoedas
     this.heroNames = {
       'gbrl': 'GLOBOO REAL',
       'gusd': 'GLOBOO DÓLAR', 
@@ -20,6 +23,8 @@ export default class MenuScene {  constructor(manager){
     };
   }
 
+  // Método chamado quando a cena é ativada
+  // Aqui você pode inicializar variáveis, carregar assets, etc.
   onEnter(){}  update(dt,input){
     let navigationChanged = false;
     // Verifica cooldown de teclas
@@ -37,12 +42,12 @@ export default class MenuScene {  constructor(manager){
     // Tocar som de navegação quando mudar de personagem
     if(navigationChanged) {
       AssetLoader.playSound(this.mgr.assets.sounds.whoosh, 0.3);
-    }
-
-    // confirma
+    } // confirma
     if(input.isDown('Action') && this.tick('Action')){
       const hero = this.list[this.index];
-      AssetLoader.playSound(this.mgr.assets.sounds.power, 0.5); 
+      AssetLoader.playSound(this.mgr.assets.sounds.power, 0.5);       
+      
+      // Ir diretamente para LevelCity, já que os controles foram mostrados antes
       this.mgr.changeScene(new LevelCity(this.mgr, hero));
     }
   }
@@ -109,7 +114,7 @@ export default class MenuScene {  constructor(manager){
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.strokeText('SELECT YOUR HERO', canvasWidth / 2, titleY); 
-      // ✨ LAYOUT CENTRALIZADO: 5 personagens em linha horizontal
+    // LAYOUT CENTRALIZADO: 5 personagens em linha horizontal
     const characterSize = 120;
     const centerY = canvasHeight * 0.5; 
     const spacing = 60; // Espaço entre personagens
@@ -151,9 +156,9 @@ export default class MenuScene {  constructor(manager){
         ctx.strokeRect(x-2, y-2, characterSize+4, characterSize+4);
         ctx.shadowBlur = 0;
         
-        // ✨ NOVO: Desenhar nome da criptomoeda acima do personagem selecionado
+        // Desenhar nome da criptomoeda acima do personagem selecionado
         const heroName = this.heroNames[id] || id.toUpperCase();
-        const nameY = y - 30; // 30px acima do personagem
+        const nameY = y - 30; 
         
         // Sombra do nome
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';

@@ -1,4 +1,9 @@
+
+// Classe para exibir a pontuação do jogador no jogo
 export default class ScoreDisplay {
+
+  // Construtor da classe ScoreDisplay
+  // Recebe o contexto do canvas e inicializa a pontuação
   constructor(ctx) {
     this.ctx = ctx;
     this.score = 0;
@@ -6,7 +11,7 @@ export default class ScoreDisplay {
     this.y = 0;
     this.fontSize = 24;
     this.fontFamily = 'Arial, sans-serif';
-    this.textColor = '#00FF00'; // Verde neon para combinar com o tema cyberpunk
+    this.textColor = '#00FF00'; 
     this.shadowColor = '#000000';
     this.shadowBlur = 3;
     
@@ -14,6 +19,8 @@ export default class ScoreDisplay {
     this.updatePosition();
   }
   
+  // Atualiza a posição do texto de pontuação
+  // Centraliza horizontalmente e posiciona 40px do topo
   updatePosition() {
     if (this.ctx && this.ctx.canvas) {
       this.x = this.ctx.canvas.width / 2;
@@ -21,6 +28,8 @@ export default class ScoreDisplay {
     }
   }
   
+  // Método para atualizar a pontuação
+  // Recebe um novo valor de pontuação e atualiza o estado
   updateScore(newScore) {
     this.score = newScore;
   }
