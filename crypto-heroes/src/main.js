@@ -71,7 +71,9 @@ const SOUNDS = {
   power:     'assets/audio/power.wav',
   crowd:     'assets/audio/crowd.wav',
   whoosh:    'assets/audio/whoosh.wav',
-  block:     'assets/audio/block.wav'
+  block:     'assets/audio/block.wav',
+  over:      'assets/audio/game_over.wav',  
+  victory:   'assets/audio/victory.wav',
 };
 
 // Expor o SceneManager globalmente para depuração 

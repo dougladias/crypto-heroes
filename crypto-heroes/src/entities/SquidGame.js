@@ -11,7 +11,7 @@ export default class SquidGame extends Enemy {
       cols: 3,             // Assumindo 3 colunas
       rows: 1,             // 1 linha
       velocityX: -2.0,     // Um pouco mais rápido que o goblin
-      health: 50,          // Mais resistente
+      health: 4000,          // Mais resistente
       damage: 20,          // Mais dano
       type: 'squid-game',
       attackRange: 50,     // Maior alcance
@@ -294,7 +294,7 @@ export default class SquidGame extends Enemy {
     }
     
     // CORREÇÃO: Poder deve PARTIR do boss, não do player
-    const offsetX = -50; // Offset do boss para a esquerda
+    const offsetX = -70; // Offset do boss para a esquerda
     const powerX = this.x + offsetX; // Posição X do BOSS
     const powerY = this.y + this.height / 2; // Meio do BOSS
     

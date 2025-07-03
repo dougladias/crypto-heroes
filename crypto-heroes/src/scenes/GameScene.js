@@ -1,3 +1,5 @@
+import AssetLoader from '../engine/AssetLoader.js';
+
 export default class GameOverScene {
   constructor(sceneManager, onRestart = null, onBackToMenu = null, isVictory = false) {
     this.sceneManager = sceneManager;
@@ -5,6 +7,14 @@ export default class GameOverScene {
     this.onBackToMenu = onBackToMenu;
     this.assets = sceneManager.assets;
     this.isVictory = isVictory; 
+    
+    // Estados de animação
+    this.fadeIn = true;
+    this.fadeAlpha = 1.0;
+    this.fadeSpeed = 2.0;
+    
+    // Tocar som apropriado baseado no resultado do jogo
+    this.playSoundForGameResult();
     
     // Botões
     this.buttons = [
@@ -28,6 +38,28 @@ export default class GameOverScene {
     
     // Configurar posições dos botões
     this.setupButtons();  
+  }
+  
+  playSoundForGameResult() {
+    if (this.isVictory) {
+      // Tocar som de vitória
+      if (this.assets.sounds.victory) {
+        AssetLoader.playSound(this.assets.sounds.victory, 0.7);
+        console.log('🎉 Tocando som de vitória!');
+      }
+    } else {
+      // Tocar som de game over
+      if (this.assets.sounds.over) {
+        AssetLoader.playSound(this.assets.sounds.over, 0.7);
+        console.log('💀 Tocando som de game over!');
+      }
+    }
+  }
+  
+  // Método chamado quando a cena é ativada
+  onEnter() {
+    // Garantir que o som seja tocado mesmo se não foi no construtor
+    this.playSoundForGameResult();
   }
   
   setupButtons() {
@@ -115,6 +147,6 @@ export default class GameOverScene {
       if (this.assets.images.gameOver) {
         ctx.drawImage(this.assets.images.gameOver, 0, 0, canvas.width, canvas.height);
       }
-    } 
+    }   
   }
 }
