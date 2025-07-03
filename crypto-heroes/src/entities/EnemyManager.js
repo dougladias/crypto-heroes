@@ -52,8 +52,8 @@ export default class EnemyManager {
     this.bossSpawned = false;
     this.showBossMessage = false;
     this.bossMessageTimer = 0;
-    this.bossMessageDuration = 2000; // 2 segundos
-    this.enemiesNeededForBoss = 60; // Novo: 2 inimigos derrotados para spawnar boss
+    this.bossMessageDuration = 2000; // 2 segundo
+    this.enemiesNeededForBoss = 60; // Novo: 1 inimigos derrotados para spawnar boss
     this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos
 
     // Callback para quando inimigo escapa

@@ -292,9 +292,8 @@ export default class SquidGame extends Enemy {
     if (!this.assets || !player) {
       return;
     }
-    
-    // CORREÇÃO: Poder deve PARTIR do boss, não do player
-    const offsetX = -70; // Offset do boss para a esquerda
+      // CORREÇÃO: Poder deve PARTIR do boss, não do player
+    const offsetX = -30; // Offset do boss para a esquerda (mais à esquerda)
     const powerX = this.x + offsetX; // Posição X do BOSS
     const powerY = this.y + this.height / 2; // Meio do BOSS
     
