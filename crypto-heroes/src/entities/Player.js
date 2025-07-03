@@ -12,8 +12,8 @@ export default class Player {
     this.heroId = heroId;    
 
     // ✨ DIMENSÕES DO PLAYER (para colisões)
-    this.width = 130;   // Largura do player
-    this.height = 280;  // Altura do player
+    this.width = 20;   // Largura do player
+    this.height = 50;  // Altura do player
 
     // ✨ ATUALIZADO: Sprite de corrida + power 
     this.sprites = {
@@ -139,12 +139,12 @@ export default class Player {
     }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 340; // Posição mais baixa no cenário
+    const groundY = ctx.canvas.height - 280; // Posição mais baixa no cenário
     const renderY = groundY - this.y; // Subtrair Y do pulo
     
     // Tamanho ideal para sprites 128x128
     const playerWidth = 130;   // Tamanho nativo da sprite
-    const playerHeight = 280;  // Mantém proporção quadrada
+    const playerHeight = 250;  // Mantém proporção quadrada
     
     this.currentSprite.draw(ctx, this.x, renderY, playerWidth, playerHeight, this.facing === -1);
     
@@ -219,7 +219,7 @@ export default class Player {
   }
   // ✨ BOUNDS PARA COLISÃO (necessário para detectar poderes do boss)
   get bounds() {
-    const groundY = 600 - 340; // ✨ CORRIGIDO: Usar valor 600 padrão em vez de ctx.canvas.height
+    const groundY = 600 - 80; // ✨ CORRIGIDO: Usar valor 600 padrão em vez de ctx.canvas.height
     const renderY = groundY - this.y;
     
     return {
