@@ -13,15 +13,17 @@ export default class PowerObject {
     // Usar o poder aleatório escolhido
     this.sprite = new Sprite(assets.images[randomPowerType], 1, 1);
     this.powerType = randomPowerType; // Guardar qual tipo foi escolhido
-    
-    // Posição inicial e direção do objeto
+      // Posição inicial e direção do objeto
     this.x = x;
     this.y = y;
     this.direction = direction; 
     this.speed = 500; 
     this.active = true;
     this.lifeTime = 3500; 
-    this.timer = 0;   
+    this.timer = 0;
+    
+    // ✨ NOVO: Dano do poder (pode ser modificado)
+    this.damage = 50; // Dano padrão
   }
   
   // Atualizar o objeto de poder

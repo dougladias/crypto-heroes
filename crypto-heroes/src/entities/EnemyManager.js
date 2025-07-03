@@ -53,11 +53,12 @@ export default class EnemyManager {
     this.showBossMessage = false;
     this.bossMessageTimer = 0;
     this.bossMessageDuration = 2000; // 2 segundo
-    this.enemiesNeededForBoss = 1; // Novo: 1 inimigos derrotados para spawnar boss
-    this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos
-
-    // Callback para quando inimigo escapa
+    this.enemiesNeededForBoss = 100; // ✨ TEMPORÁRIO: Reduzir para 5 para testar
+    this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos    // Callback para quando inimigo escapa
     this.onEnemyEscaped = null;
+    
+    // ✨ NOVO: Callback para quando inimigo é morto
+    this.onEnemyKilled = null;
     
     //NOVO: Callback para quando boss é derrotado
     this.onBossDefeated = null;
@@ -91,8 +92,14 @@ export default class EnemyManager {
     // Verificar colisões entre power objects e inimigos
     this.checkPowerObjectCollisions(player);    // Remover inimigos inativos e detectar inimigos que escaparam
     this.enemies = this.enemies.filter(enemy => {
-      if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {
-        if (!enemy.isAlive) {          this.enemiesDefeated++;
+      if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {        if (!enemy.isAlive) {
+          this.enemiesDefeated++;
+          
+          // ✨ NOVO: Notificar que um inimigo foi morto
+          console.log(`🎯 INIMIGO MORTO! Callback existe: ${!!this.onEnemyKilled}`);
+          if (this.onEnemyKilled) {
+            this.onEnemyKilled(enemy);
+          }
           
           // Atualizar dificuldade conforme progresso
           this.updateDifficulty();
@@ -370,7 +377,14 @@ export default class EnemyManager {
   // ✨ NOVO: Método para configurar callback quando boss é derrotado
   setBossDefeatedCallback(callback) {
     this.onBossDefeated = callback;
-  }checkPowerObjectCollisions(player) {
+  }
+  
+  // ✨ NOVO: Método para configurar callback quando inimigo é morto
+  setEnemyKilledCallback(callback) {
+    this.onEnemyKilled = callback;
+  }
+  
+  checkPowerObjectCollisions(player) {
     // Obter power objects do jogador
     const powerObjects = player.getPowerObjects();
     
@@ -384,9 +398,8 @@ export default class EnemyManager {
         // Verificar se houve colisão
         if (this.checkCollision(powerObject, enemy)) {
           console.log(`🎯 HIT! Power atingiu ${enemy.type}`);
-          
-          // Aplicar dano ao inimigo
-          const damage = 50;
+            // Aplicar dano ao inimigo (usar dano do próprio poder)
+          const damage = powerObject.damage || 50; // Fallback para 50
           const enemyDied = enemy.takeDamage(damage);
           
           // Tocar som de hit

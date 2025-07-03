@@ -38,25 +38,25 @@ export default class Player {
     this.gravity = 1200; 
     this.jumpPower = 850;    
     this.actionTimer = 0;
-    
-    // Sistema de objetos de poder
+      // Sistema de objetos de poder
     this.powerObjects = []; // Array para armazenar objetos de poder ativos
     this.powerReleaseTimer = 0; // Timer para soltar o objeto 1s após ativar poder
+    
+    // ✨ NOVO: Sistema de poder especial
+    this.enemiesKilled = 0; // Contador de inimigos mortos
+    this.specialPowerAvailable = false; // Se o poder especial está disponível
+    this.specialPowerCooldown = 0; // Cooldown do poder especial
+    this.ENEMIES_FOR_SPECIAL = 10; // Inimigos necessários para poder especial
+
       // ✨ ATUALIZADO: Frames para sprite de corrida (sem idle)
     this.frames = {
       run: [0, 1, 2, 3, 4],      // Frames de corrida (todos os frames)
       power: [0, 1, 2, 3, 4]     // Todos os frames da sprite de poder
     };
-    
-    // ✨ INICIALIZAR: Começar sempre correndo
+      // ✨ INICIALIZAR: Começar sempre correndo
     this.currentSprite.setFrameRange(this.frames.run);
     this.currentSprite.setFrameRate(10);
     this.currentSprite.reset();
-    console.log('🎮 Player inicializado sempre correndo:', {
-      totalFrames: this.currentSprite.totalFrames,
-      frameRange: this.frames.run,
-      currentFrame: this.currentSprite.frame
-    });
   }  update(dt, input, enemyManager = null) { 
     const wasMoving = this.isMoving;
     this.isMoving = false;
@@ -73,42 +73,45 @@ export default class Player {
       this.facing = 1;
     }
       // ✨ USAR TAMANHO REAL DA TELA - aumentado para permitir ir mais para direita
-    this.limitPlayerPosition(1200, enemyManager);
-      // Processar pulo
+    this.limitPlayerPosition(1200, enemyManager);    // Processar pulo
     if (input.wasPressed('Jump') && this.isGrounded) {
       this.jumpVelocity = this.jumpPower;
       this.isGrounded = false;
       AssetLoader.playSound(this.assets.sounds.whoosh, 0.4);
-      console.log('Pulando!');
     }
-    
-    // ✨ ATUALIZADO: Apenas ação de poder (soco removido)
+      // ✨ ATUALIZADO: Apenas ação de poder (soco removido)
     if (input.wasPressed('Power') && this.actionTimer <= 0) {
       this.currentAction = 'power';
       this.actionTimer = 600; // 600ms de duração
       this.powerReleaseTimer = 400; // Soltar objeto após 400ms
       this.currentSprite = this.sprites.power; // Trocar para sprite de poder
-      this.currentSprite.setFrameRange(this.frames.power);
-      this.currentSprite.setFrameRate(8); // Frame rate otimizado
+      this.currentSprite.setFrameRange(this.frames.power);      this.currentSprite.setFrameRate(8); // Frame rate otimizado
       this.currentSprite.reset();
       AssetLoader.playSound(this.assets.sounds.power, 0.6);
-      console.log('Poder! - Trocou para sprite de power, objeto será solto em 400ms');
+    }    // ✨ NOVO: Poder especial (tecla Q)
+    if (input.wasPressed('SpecialPower')) {
+      if (this.specialPowerAvailable && this.actionTimer <= 0) {
+        this.useSpecialPower();
+      }
     }
       // Física do pulo
     if (!this.isGrounded) {
       this.jumpVelocity -= this.gravity * dt / 1000;
       this.y += this.jumpVelocity * dt / 1000;
-      
-      // Verificar se voltou ao chão (apenas se não há plataforma)
+        // Verificar se voltou ao chão (apenas se não há plataforma)
       if (this.y <= 0) {
         this.y = 0;
         this.jumpVelocity = 0;
         this.isGrounded = true;
-        console.log('Player pousou no chão');
       }
-    }// Atualizar timer de ação
+    }    // Atualizar timer de ação
     if (this.actionTimer > 0) {
       this.actionTimer -= dt;
+    }
+    
+    // ✨ NOVO: Atualizar cooldown do poder especial
+    if (this.specialPowerCooldown > 0) {
+      this.specialPowerCooldown -= dt;
     }
     
     // Atualizar timer de soltar objeto de poder
@@ -121,19 +124,17 @@ export default class Player {
     }
     
     // Atualizar objetos de poder
-    this.updatePowerObjects(dt);    // Gerenciar animação baseada no estado
+    this.updatePowerObjects(dt);// Gerenciar animação baseada no estado
     if (this.actionTimer > 0) {
       // Durante ação - apenas animar (já foi configurado quando a ação começou)
       this.currentSprite.step(dt);
     } else {
       // ✨ SEMPRE CORRENDO: Manter animação de corrida sempre ativa
       if (this.currentAction !== 'run') {
-        this.currentAction = 'run';
-        this.currentSprite = this.sprites.run; // Usar sprite de corrida
+        this.currentAction = 'run';        this.currentSprite = this.sprites.run; // Usar sprite de corrida
         this.currentSprite.setFrameRange(this.frames.run); // Array com 5 frames
         this.currentSprite.setFrameRate(10); // Frame rate para corrida
         this.currentSprite.reset();
-        console.log('🏃 Sempre correndo - mantendo animação ativa');
       }
       this.currentSprite.step(dt); // Sempre animar a corrida
     }
@@ -160,12 +161,9 @@ export default class Player {
     // Como o personagem tem 280px de altura, o meio está a 140px da base
     // No sistema físico: this.y (altura dos pés) + 140 (meio do corpo)
     const powerY = this.y + 140; // Meio do corpo do personagem
-    
-    // Criar novo objeto de poder
+      // Criar novo objeto de poder
     const powerObject = new PowerObject(this.assets, powerX, powerY, this.facing);
     this.powerObjects.push(powerObject);
-    
-    console.log(`🚀 Poder criado! Player físico(${this.x}, ${this.y}) -> Poder físico(${powerX}, ${powerY})`);
   }
   
   // Atualizar todos os objetos de poder
@@ -192,21 +190,6 @@ export default class Player {
   getPowerObjects() {
     return this.powerObjects;
   }
-
-  // Método para debug - chame no console para testar animação de corrida
-  debugRunAnimation() {
-    console.log('🏃 Forçando animação de corrida...');
-    this.currentSprite = this.sprites.run;
-    this.currentSprite.setFrameRange(this.frames.run);
-    this.currentSprite.setFrameRate(10);
-    this.currentSprite.reset();
-    console.log('Estado após debug:', {
-      currentFrame: this.currentSprite.frame,
-      frameRange: this.currentSprite.frameRange,
-      frameRangeLength: this.currentSprite.frameRange.length
-    });
-  }
-
   // Getter para verificar status atual
   get status() {
     return {
@@ -248,31 +231,92 @@ export default class Player {
       }
     }
     
-    // Aplicar limites sem quebrar as ações
-    const previousX = this.x;
+    // Aplicar limites sem quebrar as ações    const previousX = this.x;
     
     if (this.x < leftLimit) {
       this.x = leftLimit;
-      if (previousX !== this.x) {
-        console.log(`Player atingiu limite esquerdo - X: ${this.x}, Limite: ${leftLimit}`);
-      }
     }
     if (this.x > rightLimit) {
       this.x = rightLimit;
-      if (previousX !== this.x) {
-        console.log(`Player atingiu limite direito - X: ${this.x}, Limite: ${rightLimit}, Tela: ${canvasWidth}`);
-      }
     }
       // Debug: remover para performance (descomente se precisar debugar)
     // console.log(`Player X: ${this.x.toFixed(0)}, Limite esquerdo: ${leftLimit}, Limite direito: ${rightLimit.toFixed(0)}, Tela: ${canvasWidth}`);
   }
-    // Método para receber dano
+  // Método para receber dano
   takeDamage(damage) {
     // Aplicar dano ao player - por enquanto só usar o callback
     // Você pode expandir aqui para ter sistema de HP se quiser
-    console.log(`Player recebeu ${damage} de dano!`);
     
     // Por enquanto, usar o callback existente para simular perda de vida
     return true;
+  }  // ✨ NOVO: Métodos do poder especial
+  
+  // Método chamado quando um inimigo é morto
+  onEnemyKilled(enemy) {
+    this.enemiesKilled++;
+      // Verificar se pode ativar poder especial
+    if (this.enemiesKilled >= this.ENEMIES_FOR_SPECIAL && !this.specialPowerAvailable) {
+      this.specialPowerAvailable = true;
+      // Tentar tocar som se existir
+      try {
+        if (this.assets.sounds.victory) {
+          AssetLoader.playSound(this.assets.sounds.victory, 0.3);
+        } else {
+          AssetLoader.playSound(this.assets.sounds.power, 0.3); // Fallback
+        }
+      } catch (e) {
+        // Som não disponível, continuar silenciosamente
+      }
+    }
+  }
+    // Usar poder especial
+  useSpecialPower() {
+    if (!this.specialPowerAvailable || this.specialPowerCooldown > 0) return;
+    
+    // Configurar animação de poder especial
+    this.currentAction = 'special';
+    this.actionTimer = 800; // Duração mais longa para poder especial
+    this.currentSprite = this.sprites.power;
+    this.currentSprite.setFrameRange(this.frames.power);
+    this.currentSprite.setFrameRate(12); // Mais rápido para parecer mais poderoso
+    this.currentSprite.reset();
+    
+    // Som mais intenso
+    AssetLoader.playSound(this.assets.sounds.power, 1.0);
+    
+    // Lançar múltiplos poderes em rajada
+    this.releaseSpecialPowerBurst();
+    
+    // Resetar contador e desativar poder especial
+    this.specialPowerAvailable = false;
+    this.enemiesKilled = 0;
+    this.specialPowerCooldown = 2000; // 2 segundos de cooldown
+  }
+  
+  // Lançar rajada de poderes especiais
+  releaseSpecialPowerBurst() {
+    // Lançar 8 poderes em sequência
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const offsetX = this.facing === 1 ? 80 + (i * 30) : -80 - (i * 30);
+        const powerX = this.x + offsetX;
+        const powerY = this.y + 140;
+          // Criar poder especial mais forte
+        const specialPower = new PowerObject(this.assets, powerX, powerY, this.facing);
+        specialPower.damage = 50; // Mais dano que o poder normal
+        specialPower.speed *= 1.5; // Mais rápido
+        this.powerObjects.push(specialPower);
+      }, i * 150); // 150ms entre cada poder
+    }
+  }
+  
+  // Getters para UI
+  getSpecialPowerStatus() {
+    return {
+      available: this.specialPowerAvailable,
+      progress: this.enemiesKilled,
+      needed: this.ENEMIES_FOR_SPECIAL,
+      cooldown: this.specialPowerCooldown
+    };
   }
 }

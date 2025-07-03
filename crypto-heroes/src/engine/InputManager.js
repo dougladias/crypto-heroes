@@ -37,6 +37,7 @@ export default class InputManager{
       'Escape':'Escape',     
       x:'Punch',  c:'Power',
       e:'Punch',  f:'Power',
+      q:'SpecialPower', Q:'SpecialPower',  // ✨ NOVO: Poder especial
       'Click':'Click'        
     }[k];
   }#set(k,val){

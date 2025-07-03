@@ -4,6 +4,7 @@ import ScenarioManager from '../scenarios/ScenarioManager.js';
 import EnemyManager from '../entities/EnemyManager.js';
 import ScoreDisplay from '../ui/ScoreDisplay.js';
 import LivesDisplay from '../ui/LivesDisplay.js';
+import SpecialPowerDisplay from '../ui/SpecialPowerDisplay.js';
 import GameOverScene from './GameScene.js';
 import MenuScene from './MenuScene.js';
 
@@ -31,10 +32,14 @@ export default class LevelCity {
       // Criar o EnemyManager com o tamanho da tela
       // Isso garante que o EnemyManager saiba o tamanho da arena
       this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
-      
-        // Configurar callback para quando inimigo escapa
+          // Configurar callback para quando inimigo escapa
       this.enemyManager.setEnemyEscapedCallback((enemy) => {
         this.handleEnemyEscaped(enemy);
+      });
+      
+      // ✨ NOVO: Configurar callback para quando inimigo é morto
+      this.enemyManager.setEnemyKilledCallback((enemy) => {
+        this.player.onEnemyKilled(enemy);
       });
       
       // ✨ NOVO: Configurar callback para quando boss é derrotado
@@ -49,11 +54,11 @@ export default class LevelCity {
     AssetLoader.playSound(this.mgr.assets.sounds.crowd, 0.4);
       // Inicializar display de pontuação
     this.scoreDisplay = new ScoreDisplay(manager.ctx);
+      // Inicializar display de vidas
+    this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);    // ✨ NOVO: Inicializar display do poder especial
+    this.specialPowerDisplay = new SpecialPowerDisplay(manager.ctx, manager.assets);
     
-    // Inicializar display de vidas
-    this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);    
-    
-  }  update(dt, input) {
+  }update(dt, input) {
     // Atualizar o cenário
     this.scenarioManager.update(dt);
       // Atualizar o player
@@ -94,10 +99,14 @@ export default class LevelCity {
     if (this.scoreDisplay) {
       this.scoreDisplay.render(ctx);
     }
-    
-    // Renderizar o display de vidas
+      // Renderizar o display de vidas
     if (this.livesDisplay) {
       this.livesDisplay.render(ctx);
+    }
+    
+    // ✨ NOVO: Renderizar display do poder especial
+    if (this.specialPowerDisplay) {
+      this.specialPowerDisplay.render(ctx, this.player);
     }
   }
 
@@ -315,6 +324,5 @@ export default class LevelCity {
       const isGameOver = this.livesDisplay.loseLife();      
       if (isGameOver) {        
       }
-    }
-  }  
+    }  }  
 }
