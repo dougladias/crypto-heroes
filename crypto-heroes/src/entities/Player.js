@@ -57,7 +57,7 @@ export default class Player {
       frameRange: this.frames.run,
       currentFrame: this.currentSprite.frame
     });
-  }update(dt, input) { 
+  }  update(dt, input, enemyManager = null) { 
     const wasMoving = this.isMoving;
     this.isMoving = false;
     
@@ -73,7 +73,7 @@ export default class Player {
       this.facing = 1;
     }
       // ✨ USAR TAMANHO REAL DA TELA - aumentado para permitir ir mais para direita
-    this.limitPlayerPosition(1200); 
+    this.limitPlayerPosition(1200, enemyManager);
       // Processar pulo
     if (input.wasPressed('Jump') && this.isGrounded) {
       this.jumpVelocity = this.jumpPower;
@@ -229,15 +229,24 @@ export default class Player {
       height: this.height
     };
   }
-    // ✨ LIMITES IGUAIS - Mesma margem dos dois lados
-  limitPlayerPosition(canvasWidth = 1200) {
+  // ✨ LIMITES IGUAIS - Mesma margem dos dois lados + limitação para boss
+  limitPlayerPosition(canvasWidth = 1200, enemyManager = null) {
     // Tamanho do player (mesmo valor usado no render)
     const playerWidth = 130;
     
     // Definir limites iguais dos dois lados
     const margin = 5;                                   // Margem igual para ambos os lados
     const leftLimit = margin;                           // Margem esquerda
-    const rightLimit = canvasWidth - playerWidth - margin; // Margem direita igual
+    let rightLimit = canvasWidth - playerWidth - margin; // Margem direita igual
+    
+    // ✨ NOVO: Se há boss ativo, limitar player para não passar do boss
+    if (enemyManager && enemyManager.bossActive) {
+      const bossX = canvasWidth * 0.7; // Mesma posição do boss (70% da tela)
+      const bossLimit = bossX - playerWidth - 20; // 20px de distância do boss
+      if (bossLimit < rightLimit) {
+        rightLimit = bossLimit;
+      }
+    }
     
     // Aplicar limites sem quebrar as ações
     const previousX = this.x;

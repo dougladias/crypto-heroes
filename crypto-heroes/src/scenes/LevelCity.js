@@ -56,9 +56,8 @@ export default class LevelCity {
   }  update(dt, input) {
     // Atualizar o cenário
     this.scenarioManager.update(dt);
-    
-    // Atualizar o player
-    this.player.update(dt, input);
+      // Atualizar o player
+    this.player.update(dt, input, this.enemyManager);
     
     // Atualizar inimigos com verificação de segurança
     if (this.enemyManager) {
