@@ -1,5 +1,7 @@
 import AssetLoader from '../engine/AssetLoader.js';
 
+// Cena de Game Over ou Vitória
+// Exibe uma tela de Game Over ou Vitória com opções para reiniciar ou voltar ao menu
 export default class GameOverScene {
   constructor(sceneManager, onRestart = null, onBackToMenu = null, isVictory = false) {
     this.sceneManager = sceneManager;
@@ -19,7 +21,7 @@ export default class GameOverScene {
     // Botões
     this.buttons = [
       { 
-        text: 'JOGAR NOVAMENTE', 
+        text: 'PLAY AGAIN', 
         y: 0, 
         width: 300, 
         height: 50,
@@ -27,7 +29,7 @@ export default class GameOverScene {
         hovered: false
       },
       { 
-        text: 'MENU PRINCIPAL', 
+        text: 'MAIN MENU', 
         y: 0, 
         width: 300, 
         height: 50,
@@ -39,27 +41,34 @@ export default class GameOverScene {
     // Configurar posições dos botões
     this.setupButtons();  
   }
-  
-  playSoundForGameResult() {
+    playSoundForGameResult() {
     if (this.isVictory) {
       // Tocar som de vitória
       if (this.assets.sounds.victory) {
         AssetLoader.playSound(this.assets.sounds.victory, 0.7);
-        console.log('🎉 Tocando som de vitória!');
       }
     } else {
       // Tocar som de game over
       if (this.assets.sounds.over) {
         AssetLoader.playSound(this.assets.sounds.over, 0.7);
-        console.log('💀 Tocando som de game over!');
       }
     }
   }
-  
   // Método chamado quando a cena é ativada
   onEnter() {
     // Garantir que o som seja tocado mesmo se não foi no construtor
     this.playSoundForGameResult();
+    
+    // Garantir que o cursor inicie como default
+    const canvas = this.sceneManager.ctx.canvas;
+    canvas.style.cursor = 'default';
+  }
+  
+  // Método chamado quando a cena é desativada
+  onExit() {
+    // Resetar cursor para default quando sair da cena
+    const canvas = this.sceneManager.ctx.canvas;
+    canvas.style.cursor = 'default';
   }
   
   setupButtons() {
@@ -73,7 +82,6 @@ export default class GameOverScene {
       button.y = startY + (index * spacing);
     });
   }
-  
   update(dt, input) {
     // Animação de fade in
     if (this.fadeIn) {
@@ -83,18 +91,26 @@ export default class GameOverScene {
         this.fadeIn = false;
       }
     }   
-    
-    // Verificar hover nos botões
-    const mouseX = input.mouseX || 0;
-    const mouseY = input.mouseY || 0;
-    
+      // Obter coordenadas do mouse relativas ao canvas
+    const canvas = this.sceneManager.ctx.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = (input.mouseX || 0) - rect.left;
+    const mouseY = (input.mouseY || 0) - rect.top;
+      // Verificar hover nos botões
+    let anyButtonHovered = false;
     this.buttons.forEach(button => {
       const isHovered = mouseX >= button.x && 
                        mouseX <= button.x + button.width &&
                        mouseY >= button.y && 
                        mouseY <= button.y + button.height;
       button.hovered = isHovered;
+      if (isHovered) {
+        anyButtonHovered = true;
+      }
     });
+    
+    // Alterar cursor baseado no hover
+    canvas.style.cursor = anyButtonHovered ? 'pointer' : 'default';
       // Verificar cliques nos botões ou teclas
     if (input.wasPressed('Enter') || input.wasPressed('Jump')) {
       this.handleAction('restart');
@@ -113,8 +129,11 @@ export default class GameOverScene {
       });
     }
   }
-  
-  handleAction(action) {
+    handleAction(action) {
+    // Resetar cursor antes de executar a ação
+    const canvas = this.sceneManager.ctx.canvas;
+    canvas.style.cursor = 'default';
+    
     switch (action) {
       case 'restart':        
         if (this.onRestart) {
@@ -127,7 +146,7 @@ export default class GameOverScene {
         }
         break;
     }
-  }  render() {
+  }render() {
     const ctx = this.sceneManager.ctx;
     const canvas = ctx.canvas;
     
@@ -147,6 +166,38 @@ export default class GameOverScene {
       if (this.assets.images.gameOver) {
         ctx.drawImage(this.assets.images.gameOver, 0, 0, canvas.width, canvas.height);
       }
-    }   
+    }
+    
+    // Renderizar botões
+    this.renderButtons(ctx);
+    
+    // Efeito de fade in
+    if (this.fadeIn || this.fadeAlpha > 0) {
+      ctx.fillStyle = `rgba(0, 0, 0, ${this.fadeAlpha})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  renderButtons(ctx) {
+    this.buttons.forEach(button => {
+      // Fundo do botão
+      ctx.fillStyle = button.hovered ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(button.x, button.y, button.width, button.height);
+      
+      // Borda do botão
+      ctx.strokeStyle = button.hovered ? '#FFFFFF' : '#FFFFFF';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(button.x, button.y, button.width, button.height);
+      
+      // Texto do botão
+      ctx.fillStyle = button.hovered ? '#FF0000' : '#FFFFFF';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const centerX = button.x + button.width / 2;
+      const centerY = button.y + button.height / 2;
+      
+      ctx.fillText(button.text, centerX, centerY);
+    });
   }
 }

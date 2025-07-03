@@ -22,7 +22,7 @@ export default class PowerObject {
     this.lifeTime = 3500; 
     this.timer = 0;
     
-    // ✨ NOVO: Dano do poder (pode ser modificado)
+    // Dano do poder (pode ser modificado)
     this.damage = 50; // Dano padrão
   }
   

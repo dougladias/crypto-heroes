@@ -325,4 +325,11 @@ export default class LevelCity {
       if (isGameOver) {        
       }
     }  }  
+  
+  // Método chamado quando a cena é ativada
+  onEnter() {
+    // Garantir que o cursor seja default durante o jogo
+    const canvas = this.mgr.ctx.canvas;
+    canvas.style.cursor = 'default';
+  }
 }

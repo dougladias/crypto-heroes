@@ -22,10 +22,13 @@ export default class MenuScene {  constructor(manager){
       'eth': 'ETHEREUM'
     };
   }
-
   // Método chamado quando a cena é ativada
   // Aqui você pode inicializar variáveis, carregar assets, etc.
-  onEnter(){}  update(dt,input){
+  onEnter(){
+    // Garantir que o cursor seja default no menu
+    const canvas = this.mgr.ctx.canvas;
+    canvas.style.cursor = 'default';
+  }update(dt,input){
     let navigationChanged = false;
     // Verifica cooldown de teclas
       if(input.isDown('Left')  && this.tick('Left'))  {

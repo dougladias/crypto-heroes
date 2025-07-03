@@ -5,8 +5,7 @@ export default class InputManager{
   constructor(){
     window.addEventListener('keydown', e => this.#set(e.key, true));
     window.addEventListener('keyup',   e => this.#set(e.key, false));
-    
-    // Adicionar suporte para mouse
+      // Adicionar suporte para mouse
     this.mouseX = 0;
     this.mouseY = 0;
     
@@ -37,7 +36,7 @@ export default class InputManager{
       'Escape':'Escape',     
       x:'Punch',  c:'Power',
       e:'Punch',  f:'Power',
-      q:'SpecialPower', Q:'SpecialPower',  // ✨ NOVO: Poder especial
+      q:'SpecialPower', Q:'SpecialPower',  
       'Click':'Click'        
     }[k];
   }#set(k,val){

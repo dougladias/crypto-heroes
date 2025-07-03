@@ -22,9 +22,11 @@ export default class ControlScene {
     this.textScaleDirection = 1;
     this.textScaleSpeed = 0.8;
   }
-  
-  // Método chamado quando a cena é ativada
-  onEnter() {    
+    // Método chamado quando a cena é ativada
+  onEnter() {
+    // Garantir que o cursor seja default na tela de controles
+    const canvas = this.sceneManager.ctx.canvas;
+    canvas.style.cursor = 'default';
   }
     update(dt, input) {
     // Animação de fade in
