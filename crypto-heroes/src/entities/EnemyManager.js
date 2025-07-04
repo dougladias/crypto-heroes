@@ -3,15 +3,19 @@ import RugReaper from './RugReaper.js';
 import Tucano from './Tucano.js';
 import SquidGame from './SquidGame.js';
 import AssetLoader from '../engine/AssetLoader.js';
+// import ExplosionManager from './ExplosionManager.js';
 
 export default class EnemyManager {
   constructor(assets, screenWidth = 800, screenHeight = 600) {
     this.assets = assets;
     this.screenWidth = screenWidth;
     this.screenHeight = screenHeight;
-    
-    // Lista de inimigos ativos
+      // Lista de inimigos ativos
     this.enemies = [];
+    
+    // Sistema de explosões simples
+    this.explosions = [];
+    this.explosionImage = assets.images['explosion'];
       // Configurações de spawn progressivo
     this.spawnInterval = 3000; // Começar mais devagar (3 segundos)
     this.lastSpawnTime = 0;
@@ -88,12 +92,43 @@ export default class EnemyManager {
         this.checkBossPowerCollisions(enemy, player);
       }
     });
-    
-    // Verificar colisões entre power objects e inimigos
-    this.checkPowerObjectCollisions(player);    // Remover inimigos inativos e detectar inimigos que escaparam
+      // Verificar colisões entre power objects e inimigos
+    this.checkPowerObjectCollisions(player);    // Atualizar sistema de explosões simples
+    for (let i = this.explosions.length - 1; i >= 0; i--) {
+      const explosion = this.explosions[i];
+      explosion.time += deltaTime;
+      
+      // Atualizar frame da animação
+      const frameTime = explosion.duration / explosion.totalFrames;
+      explosion.frame = Math.floor(explosion.time / frameTime);
+      
+      if (explosion.time >= explosion.duration) {
+        this.explosions.splice(i, 1);
+      }
+    }    // Remover inimigos inativos e detectar inimigos que escaparam
     this.enemies = this.enemies.filter(enemy => {
-      if (!enemy.isActive || (!enemy.isAlive && !enemy.isGasActive)) {        if (!enemy.isAlive) {
-          this.enemiesDefeated++;
+      if (!enemy.isActive || !enemy.isAlive) {if (!enemy.isAlive) {
+          this.enemiesDefeated++;          // Criar explosão quando inimigo morre
+          this.explosions.push({
+            x: enemy.x + enemy.width / 2 - 60, // Explosão maior
+            y: enemy.y + enemy.height / 2 - 125,
+            width: 200, // Aumentei de 80 para 200
+            height: 200,
+            time: 0,
+            duration: 400, // Mais rápida - de 500 para 400
+            frame: 0,
+            totalFrames: 5,
+            frameRate: 12 // Mais rápida
+          });
+          
+          // Tocar som de explosão
+          if (this.assets.sounds.punch) {
+            try {
+              this.assets.sounds.punch.play();
+            } catch (e) {
+              console.log('Erro ao tocar som:', e);
+            }
+          }
           
           // ✨ NOVO: Notificar que um inimigo foi morto
           console.log(`🎯 INIMIGO MORTO! Callback existe: ${!!this.onEnemyKilled}`);
@@ -279,13 +314,45 @@ export default class EnemyManager {
     this.bossActive = true;
     
     console.log(`👹 Boss SquidGame spawnado na posição (${bossX}, ${bossY})`);
-  }
-  render(ctx) {
+  }  render(ctx) {
     // Renderizar todos os inimigos
     this.enemies.forEach(enemy => {
       enemy.render(ctx);
-    });
-      // Renderizar mensagem de BOSS
+    });    // Renderizar explosões simples
+    for (const explosion of this.explosions) {
+      if (this.explosionImage) {
+        // Calcular frame atual com base no tempo
+        const frameIndex = Math.floor((explosion.time / explosion.duration) * explosion.totalFrames);
+        const frame = Math.min(frameIndex, explosion.totalFrames - 1);
+        
+        const frameWidth = this.explosionImage.width / explosion.totalFrames;
+        const frameHeight = this.explosionImage.height;
+        
+        // Adicionar efeito de escala crescente
+        const scale = 1 + (explosion.time / explosion.duration) * 0.3; // Cresce 30%
+        const scaledWidth = explosion.width * scale;
+        const scaledHeight = explosion.height * scale;
+        const offsetX = (scaledWidth - explosion.width) / 2;
+        const offsetY = (scaledHeight - explosion.height) / 2;
+        
+        ctx.save();
+        
+        // Adicionar transparência que diminui com o tempo
+        const alpha = 1 - (explosion.time / explosion.duration) * 0.3;
+        ctx.globalAlpha = alpha;
+        
+        ctx.drawImage(
+          this.explosionImage,
+          frame * frameWidth, 0, frameWidth, frameHeight,
+          explosion.x - offsetX, explosion.y - offsetY, 
+          scaledWidth, scaledHeight
+        );
+        
+        ctx.restore();
+      }
+    }
+    
+    // Renderizar mensagem de BOSS
     if (this.showBossMessage) {
       this.renderBossMessage(ctx);
     }

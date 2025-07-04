@@ -106,9 +106,17 @@ export default class Enemy {  constructor(x, y, spriteSheet, config = {}) {
     
     return false;
   }
-
   // Método chamado quando o inimigo morre (pode ser sobrescrito pelas subclasses)
-  onDeath() {     
+  onDeath() {
+    // Disparar evento de morte que pode ser capturado pelo gerenciador do jogo
+    if (this.onDeathCallback) {
+      this.onDeathCallback(this);
+    }
+  }
+  
+  // Método para definir callback de morte
+  setOnDeathCallback(callback) {
+    this.onDeathCallback = callback;
   }
 
   // Verificar colisão com jogador
