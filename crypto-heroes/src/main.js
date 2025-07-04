@@ -47,6 +47,9 @@ const IMAGES = {
   power_usd: 'assets/object/power-usd.png',
   power_enemy: 'assets/object/power-enemy.png', 
 
+  // Vida do Personagem
+  life: 'assets/object/life.png',
+
   // Objetos de cenário
   piso: 'assets/object/piso.png',
   predio: 'assets/object/predio.png',
@@ -59,6 +62,7 @@ const IMAGES = {
   enemy_reaper:   'assets/enemy/rug-reaper.png',
   enemy_squid:    'assets/enemy/squid-game.png',  
   tucano:         'assets/enemy/tucano.png',
+  tucano_plain:      'assets/enemy/tucano-plain.png',
 
   // Cenários     
   cyberpunk:   'assets/background/cyberpunk-sky.png',

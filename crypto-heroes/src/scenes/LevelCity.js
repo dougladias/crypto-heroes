@@ -58,6 +58,9 @@ export default class LevelCity {
     this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);    // ✨ NOVO: Inicializar display do poder especial
     this.specialPowerDisplay = new SpecialPowerDisplay(manager.ctx, manager.assets);
     
+    // ✨ NOVO: Inicializar debug
+    this.showDebug = false;
+    
   }update(dt, input) {
     // Atualizar o cenário
     this.scenarioManager.update(dt);
@@ -103,10 +106,14 @@ export default class LevelCity {
     if (this.livesDisplay) {
       this.livesDisplay.render(ctx);
     }
-    
-    // ✨ NOVO: Renderizar display do poder especial
+      // ✨ NOVO: Renderizar display do poder especial
     if (this.specialPowerDisplay) {
       this.specialPowerDisplay.render(ctx, this.player);
+    }
+    
+    // ✨ NOVO: Renderizar debug de dificuldade progressiva
+    if (this.enemyManager && (window.DEBUG_MODE || this.showDebug)) {
+      this.enemyManager.renderDebugInfo(ctx);
     }
   }
 
@@ -203,10 +210,19 @@ export default class LevelCity {
       this.scoreDisplay.setPosition(x, y);
     }
   }
-
   // Método para ativar/desativar modo debug
   toggleDebugMode() {
-    window.DEBUG_MODE = !window.DEBUG_MODE;    
+    window.DEBUG_MODE = !window.DEBUG_MODE;
+    this.showDebug = window.DEBUG_MODE;
+    console.log(`Debug mode: ${window.DEBUG_MODE ? 'ON' : 'OFF'}`);
+  }
+  
+  // ✨ NOVO: Método para testar níveis altos
+  testHighLevel(level) {
+    if (this.enemyManager) {
+      this.enemyManager.simulateHighLevel(level);
+      console.log(`🧪 Simulando nível ${level} para testar dificuldade progressiva`);
+    }
   }
 
   // Método de teste para spawnar inimigo manualmente

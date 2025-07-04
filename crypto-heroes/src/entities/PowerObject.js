@@ -44,15 +44,13 @@ export default class PowerObject {
     if (this.x < -50 || this.x > 1100) {
       this.active = false;      
     }
-  }
-  // Renderizar o objeto de poder
+  }  // Renderizar o objeto de poder
   // ctx é o contexto de renderização do canvas
   render(ctx) {
     if (!this.active) return;
     
-    // Calcular a posição Y relativa ao chão
-    // A base do chão é a mesma que a dos personagens, então usamos o mesmo cálculo
-    const groundY = ctx.canvas.height - 80; 
+    // CORREÇÃO: Usar altura fixa para consistência total entre render e bounds
+    const groundY = 600 - -85;  // Mesma lógica do getBounds
     const renderY = groundY - this.y; 
     
     // Tamanho do objeto de poder
@@ -61,10 +59,6 @@ export default class PowerObject {
     
     // Desenhar o sprite do objeto de poder
     this.sprite.draw(ctx, this.x, renderY, width, height, this.direction === -1);
-    
-    // Log da posição para verificar (apenas os primeiros segundos)
-    if (this.timer < 1000) {       
-    }
   }
   
   // Verificar se ainda está ativo
@@ -75,25 +69,19 @@ export default class PowerObject {
   // Destruir o objeto
   destroy() {
     this.active = false;
-  }  
-  // Obter bounds para colisão
+  }  // Obter bounds para colisão
   getBounds(ctx = null) {
-
-    // Usar o mesmo sistema de coordenadas dos inimigos para posicionar o objeto de poder
-    // A altura do canvas é necessária para calcular a posição Y relativa ao chão   
-    const canvasHeight = ctx ? ctx.canvas.height : 600;
-    const groundY = canvasHeight - 200; 
+    // CORREÇÃO FINAL: Calcular altura baseada no sistema usado no projeto
+    // O sistema usa altura padrão de 600, então vamos manter consistência
+    const canvasHeight = 600 - -100;  // Altura padrão do jogo
+    const groundY = canvasHeight - 80; 
+    const realY = groundY - this.y; 
     
-    // Para PowerObject, o y é relativo ao chão, então a posição real é groundY + this.y'
-    const realY = groundY + this.y; 
-    
-    // Retornar os bounds do objeto de poder
-    // A largura e altura são fixas, então não dependem do contexto
     return {
       x: this.x,
-      y: realY,
+      y: realY,  
       width: 35,
-      height: 35
+      height: 35 
     };
   }
 }

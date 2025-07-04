@@ -1,22 +1,21 @@
 import Enemy from './Enemy.js';
 
 export default class Tucano extends Enemy {
-  constructor(x, y, spriteSheet, config = {}) {
-    const tucanoConfig = {
+  constructor(x, y, spriteSheet, config = {}) {    const tucanoConfig = {
       width: 140,           // Tamanho médio
       height: 180,          // Mais alto (pássaro)
-      totalFrames: 4,      // Total de frames na sprite
-      frameRate: 12,       // Mais rápido na animação (pássaro ágil)
-      cols: 4,             // Assumindo 4 colunas
+      totalFrames: 3,      // Total de frames na sprite
+      frameRate: 10,       // Mais rápido na animação (pássaro ágil)
+      cols: 3,             // Assumindo 3 colunas
       rows: 1,             // 1 linha
-      velocityX: -3.0,     // Mais rápido que os outros (voa)
-      health: 40,          // Menos vida (mais frágil)
-      damage: 12,          // Dano médio
+      velocityX: -3.0,     // Negativo = vai para esquerda
+      health: 30,          // Menos vida (mais frágil)
+      damage: 8,          // Dano médio
       type: 'tucano',
       attackRange: 80,     // Maior alcance (pode atacar voando)
       attackCooldown: 600, // Ataque mais rápido
       ...config
-    };    super(x, y, spriteSheet, tucanoConfig);
+    };super(x, y, spriteSheet, tucanoConfig);
     
     // Inicializar velocityY corretamente
     this.velocityY = 0;
@@ -94,13 +93,43 @@ export default class Tucano extends Enemy {
       
       return feather.life > 0 && feather.alpha > 0;
     });
-  }
-  render(ctx) {
-    super.render(ctx);
+  }  render(ctx) {
+    // Renderizar sprite flipado horizontalmente (virado para esquerda)
+    if (!this.isAlive || !this.isActive) return;
+
+    // Usar o método draw do sprite com flip horizontal (true)
+    this.sprite.draw(ctx, this.x, this.y, this.width, this.height, true);
+
+    // Renderizar barra de vida se necessário
+    if (this.health < this.maxHealth) {
+      this.renderHealthBar(ctx);
+    }
 
     // Renderizar apenas efeitos mínimos de penas (se houver)
     this.renderFeatherEffects(ctx);
   }
+
+  renderHealthBar(ctx) {
+    const barWidth = this.width;
+    const barHeight = 6;
+    const barX = this.x;
+    const barY = this.y - 10;
+
+    // Fundo da barra
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+    // Barra de vida
+    const healthPercent = this.health / this.maxHealth;
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
+    ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+
+    // Borda
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
+  }
+
   renderFeatherEffects(ctx) {
     // Renderizar penas sem usar transformações que podem buggar
     this.featherEffects.forEach(feather => {

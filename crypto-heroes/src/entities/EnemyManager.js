@@ -1,6 +1,7 @@
 import GasGoblin from './GasGoblin.js';
 import RugReaper from './RugReaper.js';
 import Tucano from './Tucano.js';
+import TucanoPlain from './TucanoPlain.js';
 import SquidGame from './SquidGame.js';
 import AssetLoader from '../engine/AssetLoader.js';
 // import ExplosionManager from './ExplosionManager.js';
@@ -17,14 +18,13 @@ export default class EnemyManager {
     this.explosions = [];
     this.explosionImage = assets.images['explosion'];
       // Configurações de spawn progressivo
-    this.spawnInterval = 3000; // Começar mais devagar (3 segundos)
+    this.spawnInterval = 2500; // Começar mais devagar (2.5 segundos)
     this.lastSpawnTime = 0;
-    
-    // Sistema de progressão de dificuldade
-    this.initialMaxEnemies = 3;     // Começar com apenas 3 inimigos
+      // Sistema de progressão de dificuldade
+    this.initialMaxEnemies = 3;     // Começar com apenas 4 inimigos
     this.currentMaxEnemies = 3;     // Quantidade atual máxima
-    this.maxPossibleEnemies = 10;    // Máximo que pode chegar
-    this.enemiesPerLevel = 2;        // A cada 2 inimigos derrotados, aumenta dificuldade
+    this.maxPossibleEnemies = 5;    // Máximo que pode chegar 
+    this.enemiesPerLevel = 5;        // A cada 2 inimigos derrotados, aumenta dificuldade
     this.currentLevel = 1;           // Nível atual de dificuldade
 
     this.enemyTypes = [
@@ -32,19 +32,25 @@ export default class EnemyManager {
         name: 'gas-goblin',
         class: GasGoblin,
         sprite: 'enemy_goblin',
-        weight: 0.4 // 40% chance
+        weight: 0.30 // 30% chance
       },
       {
         name: 'rug-reaper',
         class: RugReaper,
         sprite: 'enemy_reaper',
-        weight: 0.3 // 30% chance
+        weight: 0.30 // 30% chance
       },
       {
         name: 'tucano',
         class: Tucano,
         sprite: 'tucano',
-        weight: 0.3 // 30% chance
+        weight: 0.30 // 30% chance
+      },
+      {
+        name: 'tucano-plain',
+        class: TucanoPlain,
+        sprite: 'tucano_plain',
+        weight: 0.10 // 10% chance
       }
     ];
     
@@ -246,12 +252,16 @@ export default class EnemyManager {
     // Criar instância do inimigo
     return new enemyType.class(x, y, spriteSheet, config);
   }  getRandomSpawnY(enemyType) {
-    // Todos os inimigos spawnam na mesma altura (no chão)
-    // Baseado na lógica do Player.js: groundY = ctx.canvas.height - 330
+    // Altura base do chão
     const groundY = this.screenHeight - 260; // Mesma altura do jogador
     
-    // Tucano agora também anda no chão como os outros
-    return groundY; // Altura fixa para todos os inimigos
+    // TucanoPlain aparece mais para cima
+    if (enemyType.name === 'tucano-plain') {
+      return groundY - 300; // 300 pixels mais para cima que o chão
+    }
+    
+    // Todos os outros inimigos spawnam na mesma altura (no chão)
+    return groundY; // Altura fixa para outros inimigos
   }
 
   handlePlayerEnemyCollision(enemy, player) {
@@ -384,8 +394,8 @@ export default class EnemyManager {
     ctx.restore();
   }  renderDebugInfo(ctx) {
     ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(10, 10, 250, 120);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(10, 10, 300, 160);
     
     ctx.fillStyle = 'white';
     ctx.font = '12px Arial';
@@ -394,6 +404,12 @@ export default class EnemyManager {
     ctx.fillText(`Derrotados: ${this.enemiesDefeated}`, 20, 70);
     ctx.fillText(`Escaparam: ${this.enemiesEscaped}`, 20, 90);
     ctx.fillText(`Próximo Spawn: ${Math.max(0, Math.ceil((this.spawnInterval - (Date.now() - this.lastSpawnTime)) / 1000))}s`, 20, 110);
+    ctx.fillText(`Intervalo Spawn: ${this.spawnInterval}ms`, 20, 130);
+    
+    // Mostrar próximo nível
+    const nextLevelIn = (this.currentLevel * this.enemiesPerLevel) - this.enemiesDefeated;
+    ctx.fillText(`Próximo Nível: ${nextLevelIn} inimigos`, 20, 150);
+    
     ctx.restore();
   }
 
@@ -445,10 +461,16 @@ export default class EnemyManager {
   setBossDefeatedCallback(callback) {
     this.onBossDefeated = callback;
   }
-  
-  // ✨ NOVO: Método para configurar callback quando inimigo é morto
+    // ✨ NOVO: Método para configurar callback quando inimigo é morto
   setEnemyKilledCallback(callback) {
     this.onEnemyKilled = callback;
+  }
+  
+  // ✨ NOVO: Método para testar níveis altos rapidamente
+  simulateHighLevel(level) {
+    this.enemiesDefeated = level * this.enemiesPerLevel;
+    this.updateDifficulty();
+    console.log(`🧪 SIMULANDO NÍVEL ${level}! Derrotados: ${this.enemiesDefeated}`);
   }
   
   checkPowerObjectCollisions(player) {
@@ -532,7 +554,6 @@ export default class EnemyManager {
       }
     });
   }
-
   // Método para atualizar dificuldade progressiva
   updateDifficulty() {
     // Calcular nível atual baseado em inimigos derrotados
@@ -544,15 +565,25 @@ export default class EnemyManager {
       
       // Aumentar quantidade máxima de inimigos (sem passar do limite)
       const newMaxEnemies = Math.min(
-        this.initialMaxEnemies + (this.currentLevel - 1),
+        this.initialMaxEnemies + Math.floor((this.currentLevel - 1) * 1), // Crescimento mais agressivo
         this.maxPossibleEnemies
       );
       
-      // Diminuir intervalo de spawn (mais rápido)
-      const newSpawnInterval = Math.max(
-        1000, // Mínimo de 1 segundo
-        3000 - (this.currentLevel - 1) * 300 // Diminuir 300ms por nível
-      );
+      // Diminuir intervalo de spawn (mais rápido) - mais agressivo em níveis altos
+      let newSpawnInterval;
+      if (this.currentLevel <= 5) {
+        // Níveis baixos: diminuir gradualmente
+        newSpawnInterval = Math.max(
+          800, // Mínimo de 800ms (mais rápido que antes)
+          2500 - (this.currentLevel - 1) * 300
+        );
+      } else {
+        // Níveis altos: muito mais rápido
+        newSpawnInterval = Math.max(
+          200, // Mínimo de 200ms para níveis altos
+          800 - (this.currentLevel - 5) * 50
+        );
+      }
       
       // Aplicar mudanças
       this.currentMaxEnemies = newMaxEnemies;
