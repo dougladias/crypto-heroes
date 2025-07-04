@@ -1,4 +1,3 @@
-
 // Exibe as vidas restantes do herói com ícones personalizados
 export default class LivesDisplay {
 
@@ -30,6 +29,22 @@ export default class LivesDisplay {
       return this.currentLives === 0; 
     }
     return false;
+  }
+  
+  // Método para ganhar uma vida (novo)
+  gainLife() {
+    if (this.currentLives < this.maxLives) {
+      // Se não está com vidas cheias, restaura uma vida perdida
+      this.currentLives++;
+      console.log(`💚 Vida restaurada! Vidas atuais: ${this.currentLives}/${this.maxLives}`);
+      return false; // Não é vida extra
+    } else {
+      // Se já está com vidas cheias, ganha uma vida extra
+      this.currentLives++;
+      this.maxLives++; // Aumenta o máximo também
+      console.log(`⭐ Vida EXTRA ganha! Vidas atuais: ${this.currentLives}/${this.maxLives}`);
+      return true; // É vida extra
+    }
   }
   
   // Método para restaurar as vidas do herói

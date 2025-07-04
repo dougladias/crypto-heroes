@@ -7,6 +7,7 @@ import LivesDisplay from '../ui/LivesDisplay.js';
 import SpecialPowerDisplay from '../ui/SpecialPowerDisplay.js';
 import GameOverScene from './GameScene.js';
 import MenuScene from './MenuScene.js';
+import LifePowerUpManager from '../entities/LifePowerUpManager.js';
 
 export default class LevelCity {
   constructor(manager, heroId) {   
@@ -22,13 +23,13 @@ export default class LevelCity {
       } catch (error) {
       console.error('Erro ao inicializar ScenarioManager:', error);
     }
+      // Definir dimensões da tela
+    const screenWidth = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.width) || 800;
+    const screenHeight = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.height) || 600;
     
     // Inicializar o gerenciador de inimigos com verificações de segurança
     this.enemyManager = null;
     try {
-      const screenWidth = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.width) || 800;
-      const screenHeight = (manager.ctx && manager.ctx.canvas && manager.ctx.canvas.height) || 600;     
-      
       // Criar o EnemyManager com o tamanho da tela
       // Isso garante que o EnemyManager saiba o tamanho da arena
       this.enemyManager = new EnemyManager(manager.assets, screenWidth, screenHeight);
@@ -58,6 +59,9 @@ export default class LevelCity {
     this.livesDisplay = new LivesDisplay(manager.ctx, manager.assets, heroId);    // ✨ NOVO: Inicializar display do poder especial
     this.specialPowerDisplay = new SpecialPowerDisplay(manager.ctx, manager.assets);
     
+    // ✨ NOVO: Inicializar gerenciador de power-ups de vida
+    this.lifePowerUpManager = new LifePowerUpManager(manager.assets, screenWidth, screenHeight);
+    
     // ✨ NOVO: Inicializar debug
     this.showDebug = false;
     
@@ -80,6 +84,19 @@ export default class LevelCity {
       } catch (error) {
         console.error('Erro ao atualizar EnemyManager:', error);
         this.enemyManager = null; // Desabilitar se der erro
+      }
+    }
+    
+    // ✨ NOVO: Atualizar power-ups de vida
+    if (this.lifePowerUpManager) {
+      this.lifePowerUpManager.update(dt);
+      
+      // Verificar colisões com power-ups de vida
+      const collectedPowerUps = this.lifePowerUpManager.checkCollisions(this.player);
+      if (collectedPowerUps.length > 0) {
+        collectedPowerUps.forEach(() => {
+          this.handleLifePowerUpCollected();
+        });
       }
     }
   }    render(ctx) {
@@ -111,9 +128,19 @@ export default class LevelCity {
       this.specialPowerDisplay.render(ctx, this.player);
     }
     
+    // ✨ NOVO: Renderizar power-ups de vida
+    if (this.lifePowerUpManager) {
+      this.lifePowerUpManager.render(ctx);
+    }
+    
     // ✨ NOVO: Renderizar debug de dificuldade progressiva
     if (this.enemyManager && (window.DEBUG_MODE || this.showDebug)) {
       this.enemyManager.renderDebugInfo(ctx);
+      
+      // Renderizar debug dos power-ups de vida
+      if (this.lifePowerUpManager) {
+        this.lifePowerUpManager.renderDebugInfo(ctx);
+      }
     }
   }
 
@@ -271,13 +298,31 @@ export default class LevelCity {
       
       // Se perdeu a última vida, chamar game over
       if (isGameOver) {        
-        this.triggerGameOver();      }
+        this.triggerGameOver();
+      }
     }
   }
   
   // NOVO: Método para quando boss é derrotado (VITÓRIA!)
   handleBossDefeated(boss) {    
     this.triggerGameOver(true); 
+  }
+  
+  // ✨ NOVO: Método chamado quando um power-up de vida é coletado
+  handleLifePowerUpCollected() {
+    if (this.livesDisplay) {
+      const isExtraLife = this.livesDisplay.gainLife();
+      
+      // Tocar som de coleta
+      AssetLoader.playSound(this.mgr.assets.sounds.power, 0.6);
+      
+      if (isExtraLife) {
+        console.log('⭐ VIDA EXTRA GANHA!');
+        // Poderia tocar um som especial para vida extra
+      } else {
+        console.log('💚 Vida restaurada!');
+      }
+    }
   }
   
   // Método para game over
@@ -340,7 +385,64 @@ export default class LevelCity {
       const isGameOver = this.livesDisplay.loseLife();      
       if (isGameOver) {        
       }
-    }  }  
+    }
+  }
+  
+  // ✨ NOVO: Métodos para testar power-ups de vida
+  testSpawnLifePowerUp() {
+    if (this.lifePowerUpManager) {
+      const powerUp = this.lifePowerUpManager.forceSpawnPowerUp();
+      console.log('💚 Power-up de vida spawnou para teste!');
+      return powerUp;
+    }
+  }
+  
+  testGainLife() {
+    if (this.livesDisplay) {
+      const isExtraLife = this.livesDisplay.gainLife();
+      console.log(isExtraLife ? '⭐ Vida extra ganha!' : '💚 Vida restaurada!');
+    }
+  }
+  
+  // Método para verificar estatísticas dos power-ups
+  getLifePowerUpStats() {
+    if (this.lifePowerUpManager) {
+      return this.lifePowerUpManager.statistics;
+    }
+    return null;
+  }
+  
+  // Método para configurar spawn de power-ups
+  setLifePowerUpSettings(spawnChance, spawnInterval) {
+    if (this.lifePowerUpManager) {
+      this.lifePowerUpManager.setSpawnChance(spawnChance);
+      this.lifePowerUpManager.setSpawnInterval(spawnInterval);
+      console.log(`⚙️ Configurações de life power-up: chance=${spawnChance}, interval=${spawnInterval}ms`);
+    }
+  }
+  
+  // ✨ NOVO: Método para testar colisão forçada
+  testLifePowerUpCollision() {
+    if (this.lifePowerUpManager && this.player) {
+      // Spawnar power-up na posição do player
+      const playerBounds = this.player.bounds;
+      const powerUp = this.lifePowerUpManager.forceSpawnPowerUp(playerBounds.x, playerBounds.y);
+      console.log('💚 Power-up spawnado na posição do player para testar colisão!');
+      return powerUp;
+    }
+  }
+  
+  // ✨ NOVO: Método para testar colisão na frente do player
+  testLifePowerUpInFront() {
+    if (this.lifePowerUpManager && this.player) {
+      // Spawnar power-up na frente do player
+      const groundY = 600 - 280;
+      const playerScreenY = groundY - this.player.y;
+      const powerUp = this.lifePowerUpManager.forceSpawnPowerUp(this.player.x + 100, playerScreenY + 100);
+      console.log('💚 Power-up spawnado na frente do player!');
+      return powerUp;
+    }
+  }
   
   // Método chamado quando a cena é ativada
   onEnter() {
