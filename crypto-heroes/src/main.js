@@ -51,6 +51,9 @@ const IMAGES = {
   piso: 'assets/object/piso.png',
   predio: 'assets/object/predio.png',
 
+  // Explosões
+  explosion: 'assets/object/explosion.png',
+
   // Personagens Inimigos
   enemy_goblin:   'assets/enemy/gas-goblin.png',
   enemy_reaper:   'assets/enemy/rug-reaper.png',
