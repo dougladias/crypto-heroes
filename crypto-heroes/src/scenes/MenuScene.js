@@ -21,15 +21,92 @@ export default class MenuScene {  constructor(manager){
       'btc': 'BITCOIN',
       'eth': 'ETHEREUM'
     };
-  }
-  // Método chamado quando a cena é ativada
+    
+    // Variáveis para controle do mouse
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.heroPositions = []; // Array para armazenar as posições dos personagens
+    this.mouseListenersAdded = false;
+  }  // Método chamado quando a cena é ativada
   // Aqui você pode inicializar variáveis, carregar assets, etc.
   onEnter(){
-    // Garantir que o cursor seja default no menu
+    // Garantir que o cursor seja pointer no menu para indicar interatividade
     const canvas = this.mgr.ctx.canvas;
-    canvas.style.cursor = 'default';
+    canvas.style.cursor = 'pointer';
+    
+    // Adicionar listeners de mouse se ainda não foram adicionados
+    if (!this.mouseListenersAdded) {
+      this.addMouseListeners();
+      this.mouseListenersAdded = true;
+    }
+  }
+  
+  // Adicionar listeners de mouse
+  addMouseListeners() {
+    const canvas = this.mgr.ctx.canvas;
+    
+    // Listener para movimento do mouse
+    this.mouseMoveHandler = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      this.mouseX = e.clientX - rect.left;
+      this.mouseY = e.clientY - rect.top;
+    };
+    
+    // Listener para clique do mouse
+    this.mouseClickHandler = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Verificar se o clique foi em algum personagem
+      this.heroPositions.forEach((pos, i) => {
+        if (mouseX >= pos.x && mouseX <= pos.x + pos.width &&
+            mouseY >= pos.y && mouseY <= pos.y + pos.height) {
+          // Selecionar o personagem clicado
+          this.index = i;
+          
+          // Tocar som de seleção
+          AssetLoader.playSound(this.mgr.assets.sounds.power, 0.5);
+          
+          // Iniciar o jogo com o personagem selecionado
+          const hero = this.list[this.index];
+          this.mgr.changeScene(new LevelCity(this.mgr, hero));
+        }
+      });
+    };
+    
+    // Adicionar os listeners
+    canvas.addEventListener('mousemove', this.mouseMoveHandler);
+    canvas.addEventListener('click', this.mouseClickHandler);
+  }
+  
+  // Remover listeners de mouse (limpeza)
+  removeMouseListeners() {
+    const canvas = this.mgr.ctx.canvas;
+    if (this.mouseMoveHandler) {
+      canvas.removeEventListener('mousemove', this.mouseMoveHandler);
+    }
+    if (this.mouseClickHandler) {
+      canvas.removeEventListener('click', this.mouseClickHandler);
+    }
   }update(dt,input){
     let navigationChanged = false;
+    
+    // Verificar se o mouse está sobre algum personagem
+    let mouseOverHero = -1;
+    this.heroPositions.forEach((pos, i) => {
+      if (this.mouseX >= pos.x && this.mouseX <= pos.x + pos.width &&
+          this.mouseY >= pos.y && this.mouseY <= pos.y + pos.height) {
+        mouseOverHero = i;
+      }
+    });
+    
+    // Se o mouse está sobre um personagem diferente, mudar seleção
+    if (mouseOverHero !== -1 && mouseOverHero !== this.index) {
+      this.index = mouseOverHero;
+      navigationChanged = true;
+    }
+    
     // Verifica cooldown de teclas
       if(input.isDown('Left')  && this.tick('Left'))  {
       this.index=(this.index+this.list.length-1)%this.list.length;
@@ -125,8 +202,7 @@ export default class MenuScene {  constructor(manager){
     // Calcular espaçamento para 5 personagens centralizados
     const totalWidth = characterSize * 5 + spacing * 4; // 5 personagens + 4 espaços
     const startX = (canvasWidth - totalWidth) / 2; 
-    
-    // Posições para os 5 personagens em linha horizontal
+      // Posições para os 5 personagens em linha horizontal
     const positions = [];
     for(let i = 0; i < 5; i++) {
       positions.push({
@@ -134,6 +210,14 @@ export default class MenuScene {  constructor(manager){
         y: centerY - characterSize / 2 
       });
     }
+    
+    // Atualizar posições dos personagens para detecção de mouse
+    this.heroPositions = positions.map(pos => ({
+      x: pos.x,
+      y: pos.y,
+      width: characterSize,
+      height: characterSize
+    }));
 
     // desenha os personagens
     this.list.forEach((id,i)=>{
@@ -144,6 +228,20 @@ export default class MenuScene {  constructor(manager){
       const x = pos.x;
       const y = pos.y;      // desenha o ícone do herói
       ctx.globalAlpha = (i===this.index?1:0.6);
+      
+      // Adicionar hover effect se o mouse estiver sobre o personagem
+      let isHovered = false;
+      if (this.heroPositions[i]) {
+        const pos = this.heroPositions[i];
+        isHovered = this.mouseX >= pos.x && this.mouseX <= pos.x + pos.width &&
+                   this.mouseY >= pos.y && this.mouseY <= pos.y + pos.height;
+      }
+      
+      // Se estiver com hover, aumentar um pouco a opacidade
+      if (isHovered && i !== this.index) {
+        ctx.globalAlpha = 0.8;
+      }
+      
       ctx.drawImage(images[`hero_${id}`], x, y, characterSize, characterSize);
       
       // desenha a seleção e nome do herói

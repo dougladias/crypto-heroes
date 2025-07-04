@@ -109,20 +109,11 @@ export default class ControlScene {
     ctx.save();
     ctx.globalAlpha = 1 - this.fadeAlpha; 
     
-
     // Sombra do texto
     ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Pressione qualquer tecla para continuar', 2, 2);   
-    
-    // Contador regressivo
-    if (timeLeft > 0) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Início automático em: ${timeLeft}s`, canvas.width / 2, canvas.height - 40);
-    }
+    ctx.fillText('Pressione qualquer tecla para continuar', 2, 2);
     
     // Texto animado
     ctx.restore();
