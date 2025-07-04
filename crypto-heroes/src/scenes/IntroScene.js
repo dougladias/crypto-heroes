@@ -68,17 +68,17 @@ export default class IntroScene{
       ctx.font = '64px Arial'; 
       ctx.textAlign = 'center';
       ctx.fillText('CRYPTO HEROES', ctx.canvas.width / 2, ctx.canvas.height / 2);
-    }    // Mostrar prompt para iniciar áudio
+    } 
+    // Mostrar prompt para iniciar áudio
     if(this.showPrompt && this.fade <= 0.5){
       ctx.fillStyle = '#00ff88'; 
       ctx.font = '28px Arial'; 
-      ctx.textAlign = 'center';
-      ctx.fillText('Pressione Qualquer Tecla Para Iniciar', ctx.canvas.width / 2, ctx.canvas.height - 80);
+      ctx.textAlign = 'center';      
     }
-      // Mostrar quando áudio iniciou
+    // Mostrar quando áudio iniciou
     if(this.audioStarted && !this.showPrompt){
       ctx.fillStyle = '#ffff00'; 
-      ctx.font = '24px Arial'; 
+      ctx.font = '15px "Press Start 2P", monospace'; 
       ctx.textAlign = 'center';
       const remaining = Math.max(0, 3000 - this.transitionTimer);
       const seconds = Math.ceil(remaining / 1000);
