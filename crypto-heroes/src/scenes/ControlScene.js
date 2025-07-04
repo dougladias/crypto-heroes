@@ -49,10 +49,8 @@ export default class ControlScene {
     } else if (this.textScale <= 0.9) {
       this.textScale = 0.9;
       this.textScaleDirection = 1;
-    }    // Verificar se pode prosseguir (qualquer tecla ou tempo esgotado)
-    const canProceed = this.currentTime >= this.autoStartTimer ||
-                      (input.isDown('Enter') && this.tick('Enter')) ||
-                      (input.isDown('Action') && this.tick('Action')) ||
+    }    // Verificar se pode prosseguir 
+    const canProceed = this.currentTime >= this.autoStartTimer ||                                          
                       (input.isDown('Jump') && this.tick('Jump')) ||
                       (input.isDown('Power') && this.tick('Power')) ||
                       (input.isDown('Left') && this.tick('Left')) ||
