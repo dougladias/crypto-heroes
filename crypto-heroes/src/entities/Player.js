@@ -36,7 +36,15 @@ export default class Player {
     this.isGrounded = true;
     this.jumpVelocity = 0;
     this.gravity = 1200; 
-    this.jumpPower = 850;    
+    this.jumpPower = 850;
+    
+    // Sistema Fast Fall e Agachar
+    this.isCrouching = false;        // Se está agachado
+    this.isFastFalling = false;      // Se está em fast fall
+    this.fastFallMultiplier = 2.5;   // Multiplicador da gravidade no fast fall
+    this.crouchHeight = 25;          // Altura quando agachado (metade da altura normal)
+    this.normalHeight = 50;          // Altura normal
+    
     this.actionTimer = 0;
       // Sistema de objetos de poder
     this.powerObjects = []; // Array para armazenar objetos de poder ativos
@@ -94,17 +102,26 @@ export default class Player {
         this.useSpecialPower();
       }
     }
-      // Física do pulo
-    if (!this.isGrounded) {
-      this.jumpVelocity -= this.gravity * dt / 1000;
-      this.y += this.jumpVelocity * dt / 1000;
-        // Verificar se voltou ao chão (apenas se não há plataforma)
-      if (this.y <= 0) {
-        this.y = 0;
-        this.jumpVelocity = 0;
-        this.isGrounded = true;
-      }
-    }    // Atualizar timer de ação
+      // ✨ ATUALIZADO: Física do pulo com Fast Fall
+  if (!this.isGrounded) {
+    // Aplicar gravidade normal ou fast fall
+    let currentGravity = this.gravity;
+    if (this.isFastFalling) {
+      currentGravity *= this.fastFallMultiplier; // Gravidade mais forte
+    }
+    
+    this.jumpVelocity -= currentGravity * dt / 1000;
+    this.y += this.jumpVelocity * dt / 1000;
+    
+    // Verificar se voltou ao chão
+    if (this.y <= 0) {
+      this.y = 0;
+      this.jumpVelocity = 0;
+      this.isGrounded = true;
+      this.isFastFalling = false; // Reset fast fall ao tocar o chão
+    }
+  }  
+    // Atualizar timer de ação
     if (this.actionTimer > 0) {
       this.actionTimer -= dt;
     }
@@ -138,16 +155,63 @@ export default class Player {
       }
       this.currentSprite.step(dt); // Sempre animar a corrida
     }
+    
+    // ✨ NOVO: Sistema Fast Fall / Agachar (tecla S)
+    const downPressed = input.isDown('Down'); // Tecla S
+    
+    if (downPressed) {
+      if (!this.isGrounded) {
+        // No ar: Fast Fall
+        if (!this.isFastFalling) {
+          this.isFastFalling = true;
+          // Som opcional para feedback
+          try {
+            AssetLoader.playSound(this.assets.sounds.whoosh, 0.3);
+          } catch (e) {
+            // Som não disponível
+          }
+        }
+      } else {
+        // No chão: Agachar
+        if (!this.isCrouching) {
+          this.isCrouching = true;
+          this.height = this.crouchHeight; // Reduzir altura para colisão
+        }
+      }
+    } else {
+      // Soltar tecla S
+      this.isFastFalling = false;
+      if (this.isCrouching) {
+        this.isCrouching = false;
+        this.height = this.normalHeight; // Restaurar altura normal
+      }
+    }
   }  render(ctx) { 
     // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 280; // Posição mais baixa no cenário
-    const renderY = groundY - this.y; // Subtrair Y do pulo
+    const groundY = ctx.canvas.height - 280;
+    const renderY = groundY - this.y;
     
-    // Tamanho ideal para sprites 128x128
-    const playerWidth = 130;   // Tamanho nativo da sprite
-    const playerHeight = 250;  // Mantém proporção quadrada
+    // ✨ FEEDBACK VISUAL MELHORADO
+    const playerWidth = 130;
+    let playerHeight = 250;
+    let renderYAdjusted = renderY;
     
-    this.currentSprite.draw(ctx, this.x, renderY, playerWidth, playerHeight, this.facing === -1);
+    // Se estiver agachado, reduzir altura visual e ajustar posição
+    if (this.isCrouching) {
+      playerHeight = 160; // ✨ MAIS BAIXO: de 180 para 160
+      renderYAdjusted = renderY + 90; // ✨ MAIS BAIXO: de 70 para 90
+    
+      // ✨ NOVO: Efeito visual opcional - brilho quando agachado
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 255, 0, 0.3)'; // Brilho verde sutil
+      ctx.shadowBlur = 5;
+    }
+    
+    this.currentSprite.draw(ctx, this.x, renderYAdjusted, playerWidth, playerHeight, this.facing === -1);
+    
+    if (this.isCrouching) {
+      ctx.restore(); // Restaurar efeito visual
+    }
     
     // Renderizar objetos de poder
     this.renderPowerObjects(ctx);
@@ -202,15 +266,27 @@ export default class Player {
   }
   // ✨ BOUNDS PARA COLISÃO (necessário para detectar poderes do boss)
   get bounds() {
-    const groundY = 600 - 80; // ✨ CORRIGIDO: Usar valor 600 padrão em vez de ctx.canvas.height
+    const groundY = 600 - 80;
     const renderY = groundY - this.y;
     
-    return {
-      x: this.x,
-      y: renderY,
-      width: this.width,
-      height: this.height
-    };
+    // ✨ SISTEMA DE ESQUIVA: Hitbox muito menor quando agachado
+    if (this.isCrouching) {
+      // Agachado: hitbox bem menor e mais baixa
+      return {
+        x: this.x + 10,                    // Margem lateral menor
+        y: renderY + 120,                  // Muito mais baixo (120px para baixo)
+        width: this.width - 20,            // Largura reduzida (de 20 para 0)
+        height: this.crouchHeight          // Altura muito reduzida (25px)
+      };
+    } else {
+      // Em pé: hitbox normal
+      return {
+        x: this.x,
+        y: renderY,
+        width: this.width,
+        height: this.height * 5             // Altura normal multiplicada
+      };
+    }
   }
   // ✨ LIMITES IGUAIS - Mesma margem dos dois lados + limitação para boss
   limitPlayerPosition(canvasWidth = 1200, enemyManager = null) {

@@ -522,15 +522,15 @@ export default class EnemyManager {
     bossPowers.forEach(power => {
       if (!power.isActive()) return;
       
-      // ✨ DEBUG: Verificar posições
+      // ✨ USAR OS BOUNDS ATUALIZADOS (que consideram agachamento)
       const powerBounds = power.getBounds();
-      const playerBounds = player.bounds;
+      const playerBounds = player.bounds; // ← Este já considera agachamento!
       
-      console.log(`🎯 DEBUG COLISÃO: 
-        Poder: x=${powerBounds.x.toFixed(0)} y=${powerBounds.y.toFixed(0)} w=${powerBounds.width} h=${powerBounds.height}
-        Player: x=${playerBounds.x.toFixed(0)} y=${playerBounds.y.toFixed(0)} w=${playerBounds.width} h=${playerBounds.height}`);
+      // ✨ DEBUG: Mostrar status do agachamento
+      if (player.isCrouching) {
+        console.log('🟢 PLAYER AGACHADO - Hitbox reduzida!');
+      }
       
-      // USAR O MESMO MÉTODO QUE FUNCIONA PARA PLAYER VS INIMIGOS!
       if (this.checkCollision(power, player)) {
         console.log('💥 BOSS ATINGIU O PLAYER!');
         

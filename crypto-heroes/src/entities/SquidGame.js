@@ -239,7 +239,7 @@ export default class SquidGame extends Enemy {
     // Verificar se passou o cooldown atual
     if (currentTime - this.lastPowerTime >= this.currentPowerCooldown) {
       
-      // Verificar chance de atirar (para tornar mais imprevísível)
+      // Verificar chance de atirar (para tornar mais imprevísivel)
       if (Math.random() < this.shootChance) {
         
         // Se estiver em modo rajada
@@ -292,12 +292,25 @@ export default class SquidGame extends Enemy {
     if (!this.assets || !player) {
       return;
     }
-      // CORREÇÃO: Poder deve PARTIR do boss, não do player
-    const offsetX = -30; // Offset do boss para a esquerda (mais à esquerda)
-    const powerX = this.x + offsetX; // Posição X do BOSS
-    const powerY = this.y + this.height / 2; // Meio do BOSS
     
-    // Criar poder que vai do boss em direção ao player (direção -1 = esquerda)
+    const offsetX = -30;
+    const powerX = this.x + offsetX;
+    
+    // ✨ SISTEMA DE MÚLTIPLAS ALTURAS
+    let powerY;
+    const shootPattern = Math.random();
+    
+    if (shootPattern < 0.4) {
+      // 40% - Tiro alto (pode ser esquivado agachando)
+      powerY = this.y + (this.height * 0.3); // Terço superior
+    } else if (shootPattern < 0.7) {
+      // 30% - Tiro meio (pega player em pé, difícil de esquivar)
+      powerY = this.y + (this.height * 0.6); // Meio-baixo
+    } else {
+      // 30% - Tiro baixo (sempre pega, não pode esquivar agachando)
+      powerY = this.y + (this.height * 0.8); // Bem baixo
+    }
+    
     const powerObject = new PowerObject(this.assets, powerX, powerY, -1);
     this.powerObjects.push(powerObject);
   }
