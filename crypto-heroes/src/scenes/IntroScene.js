@@ -82,7 +82,7 @@ export default class IntroScene{
       ctx.textAlign = 'center';
       const remaining = Math.max(0, 3000 - this.transitionTimer);
       const seconds = Math.ceil(remaining / 1000);
-      ctx.fillText(`Carregando menu... ${seconds}s`, ctx.canvas.width / 2, ctx.canvas.height - 80);   
+      ctx.fillText(`Carregando menu... ${seconds}s`, ctx.canvas.width / 2, ctx.canvas.height - 90);   
     }
     
     // Fade effect
