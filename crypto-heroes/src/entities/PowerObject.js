@@ -79,7 +79,7 @@ export default class PowerObject {
     
     return {
       x: this.x,
-      y: realY,  
+      y: realY + 20,  
       width: 35,
       height: 35 
     };
