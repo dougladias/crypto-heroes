@@ -9,7 +9,7 @@ export default class Tucano extends Enemy {
       cols: 3,             // Assumindo 3 colunas
       rows: 1,             // 1 linha
       velocityX: -3.0,     // Negativo = vai para esquerda
-      health: 30,          // Menos vida (mais frágil)
+      health: 20,          // Menos vida (mais frágil)
       damage: 8,          // Dano médio
       type: 'tucano',
       attackRange: 80,     // Maior alcance (pode atacar voando)

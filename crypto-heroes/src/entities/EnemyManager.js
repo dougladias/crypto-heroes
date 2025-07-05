@@ -63,7 +63,7 @@ export default class EnemyManager {
     this.showBossMessage = false;
     this.bossMessageTimer = 0;
     this.bossMessageDuration = 2000; // 2 segundo
-    this.enemiesNeededForBoss = 100; // ✨ TEMPORÁRIO: Reduzir para 5 para testar
+    this.enemiesNeededForBoss = 100; // 5 para testar
     this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos    // Callback para quando inimigo escapa
     this.onEnemyEscaped = null;
     
@@ -96,6 +96,11 @@ export default class EnemyManager {
         // Verificar colisões dos poderes do boss (AGORA USA getPowerObjects!)
       if (enemy.isBoss && enemy.getPowerObjects) {
         this.checkBossPowerCollisions(enemy, player);
+        
+        // ✨ NOVO: Verificar colisões dos ataques aéreos
+        if (enemy.getAerialPowers) {
+          this.checkAerialPowerCollisions(enemy, player);
+        }
       }
     });
       // Verificar colisões entre power objects e inimigos
@@ -522,11 +527,11 @@ export default class EnemyManager {
     bossPowers.forEach(power => {
       if (!power.isActive()) return;
       
-      // ✨ USAR OS BOUNDS ATUALIZADOS (que consideram agachamento)
+      // USAR OS BOUNDS ATUALIZADOS (que consideram agachamento)
       const powerBounds = power.getBounds();
       const playerBounds = player.bounds; // ← Este já considera agachamento!
       
-      // ✨ DEBUG: Mostrar status do agachamento
+      // DEBUG: Mostrar status do agachamento
       if (player.isCrouching) {
         console.log('🟢 PLAYER AGACHADO - Hitbox reduzida!');
       }
@@ -551,6 +556,53 @@ export default class EnemyManager {
         
         // IMPORTANTE: Destruir o poder para que suma
         power.destroy();
+      }
+    });
+  }
+  // Método para verificar colisões dos ataques aéreos
+  checkAerialPowerCollisions(boss, player) {
+    const aerialPowers = boss.getAerialPowers();
+    
+    aerialPowers.forEach(aerialPower => {
+      if (!aerialPower.isActive()) return;
+      
+      const powerBounds = aerialPower.getBounds();
+      const playerBounds = player.bounds;
+      
+      // Verificar colisão
+      if (this.checkCollision(aerialPower, player)) {
+        console.log('💥 ATAQUE AÉREO ATINGIU O PLAYER!');
+        
+        // Aplicar dano
+        if (player.takeDamage) {
+          player.takeDamage(aerialPower.damage);
+        }
+        
+        // Callback de dano
+        if (this.onEnemyEscaped) {
+          this.onEnemyEscaped({ type: 'aerial_damage' });
+        }
+        
+        // Som de dano
+        if (this.assets && this.assets.sounds && this.assets.sounds.kick) {
+          AssetLoader.playSound(this.assets.sounds.kick, 0.6);
+        }
+        
+        // Criar explosão no local do impacto
+        this.explosions.push({
+          x: powerBounds.x - 60,
+          y: powerBounds.y - 60,
+          width: 120,
+          height: 120,
+          time: 0,
+          duration: 300,
+          frame: 0,
+          totalFrames: 5,
+          frameRate: 15
+        });
+        
+        // Destruir projétil
+        aerialPower.destroy();
       }
     });
   }

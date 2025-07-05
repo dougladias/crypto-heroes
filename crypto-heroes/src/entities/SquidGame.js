@@ -1,5 +1,7 @@
 import Enemy from './Enemy.js';
-import PowerObject from './BossPowerObject.js'; 
+import Sprite from '../engine/Sprite.js';
+import PowerObject from './BossPowerObject.js';
+import AerialPowerObject from './AerialPowerObject.js'; // ✨ NOVO
 
 export default class SquidGame extends Enemy {
   constructor(x, y, spriteSheet, config = {}) {
@@ -11,7 +13,7 @@ export default class SquidGame extends Enemy {
       cols: 3,             // Assumindo 3 colunas
       rows: 1,             // 1 linha
       velocityX: -2.0,     // Um pouco mais rápido que o goblin
-      health: 4000,          // Mais resistente
+      health: 2500,          // Mais resistente
       damage: 20,          // Mais dano
       type: 'squid-game',
       attackRange: 50,     // Maior alcance
@@ -60,6 +62,17 @@ export default class SquidGame extends Enemy {
     if (this.isBoss) {
       this.generateRandomCooldown();
     }
+    
+    // ✨ NOVO: Sistema de ataques aéreos
+    this.aerialPowers = [];
+    this.aerialAttackCooldown = 3000; // 3 segundos entre ataques aéreos
+    this.lastAerialAttackTime = 0;
+    this.aerialAttackActive = false;
+    this.maxAerialProjectiles = 2; // Máximo de projéteis por ataque
+    
+    // Sistema de vida para 50%
+    this.maxHealth = this.health;
+    this.phase2Activated = false; // Controlar se já ativou fase 2
   }
   setupAnimations() {
     // Definir diferentes animações se o sprite tiver múltiplos frames
@@ -99,7 +112,6 @@ export default class SquidGame extends Enemy {
     this.isMovingVertically = true;
     this.timeAtPosition = 0;
   }  update(deltaTime, player = null) {
-    // Se for boss, ficar parado voando
     if (this.isBoss) {
       // Atualizar apenas a animação usando o sistema do Sprite, sem movimento
       this.updateAnimation(deltaTime);
@@ -121,6 +133,14 @@ export default class SquidGame extends Enemy {
         if (this.inkAttackTimer <= 0) {
           this.inkAttackActive = false;
         }
+      }
+      
+      // ✨ NOVO: Atualizar projéteis aéreos
+      this.updateAerialPowers(deltaTime);
+      
+      // ✨ NOVO: Verificar se deve fazer ataque aéreo (apenas se vida <= 50%)
+      if (this.shouldUseAerialAttack() && player) {
+        this.performAerialAttack(player);
       }
     } else {
       // Comportamento normal para inimigos comuns
@@ -199,6 +219,98 @@ export default class SquidGame extends Enemy {
     }
     return false;
   }
+  
+  // ✨ NOVO: Verificar se deve usar ataque aéreo
+  shouldUseAerialAttack() {
+    const healthPercentage = this.health / this.maxHealth;
+    const currentTime = performance.now();
+    
+    // Só atacar se vida <= 50% E passou o cooldown
+    return healthPercentage <= 0.5 && 
+           currentTime - this.lastAerialAttackTime >= this.aerialAttackCooldown &&
+           !this.aerialAttackActive;
+  }
+  
+  // ✨ NOVO: Executar ataque aéreo
+  performAerialAttack(player) {
+    console.log('🌩️ BOSS ATIVOU ATAQUE AÉREO!');
+    
+    // Ativar fase 2 se ainda não foi ativada
+    if (!this.phase2Activated) {
+      this.phase2Activated = true;
+      console.log('⚡ BOSS ENTROU NA FASE 2! (50% de vida)');
+    }
+    
+    this.aerialAttackActive = true;
+    this.lastAerialAttackTime = performance.now();
+    
+    // Tocar som especial se disponível
+    try {
+      if (this.assets.sounds.whoosh) {
+        AssetLoader.playSound(this.assets.sounds.whoosh, 0.8);
+      }
+    } catch (e) {
+      // Som não disponível
+    }
+    
+    // Criar múltiplos projéteis que caem do céu
+    for (let i = 0; i < this.maxAerialProjectiles; i++) {
+      setTimeout(() => {
+        this.createAerialProjectile(player);
+      }, i * 300); // 300ms entre cada projétil
+    }
+    
+    // Resetar estado após todos os projéteis
+    setTimeout(() => {
+      this.aerialAttackActive = false;
+    }, this.maxAerialProjectiles * 300 + 1000);
+  }
+  
+  // ✨ NOVO: Criar projétil aéreo
+  createAerialProjectile(player) {
+    if (!player) return;
+    
+    // Calcular posição X próxima ao player (com alguma variação)
+    const playerX = player.x;
+    const variation = (Math.random() - 0.5) * 200; // ±100px de variação
+    const projectileX = playerX + variation;
+    
+    // Garantir que não saia da tela
+    const clampedX = Math.max(50, Math.min(1150, projectileX));
+    
+    // Projétil começa no topo da tela
+    const projectileY = -50;
+    
+    const aerialPower = new AerialPowerObject(this.assets, clampedX, projectileY);
+    this.aerialPowers.push(aerialPower);
+    
+    console.log(`💫 Projétil aéreo criado em X: ${clampedX}`);
+  }
+  
+  // Atualizar projéteis aéreos
+  updateAerialPowers(dt) {
+    for (let i = this.aerialPowers.length - 1; i >= 0; i--) {
+      const aerialPower = this.aerialPowers[i];
+      aerialPower.update(dt);
+      
+      if (!aerialPower.isActive()) {
+        this.aerialPowers.splice(i, 1);
+      }
+    }
+  }
+  
+  // Renderizar projéteis aéreos
+  renderAerialPowers(ctx) {
+    this.aerialPowers.forEach(aerialPower => {
+      aerialPower.render(ctx);
+    });
+  }
+  
+  // Obter projéteis aéreos (para colisões)
+  getAerialPowers() {
+    return this.aerialPowers;
+  }
+  
   render(ctx) {
     super.render(ctx);
     
@@ -209,6 +321,12 @@ export default class SquidGame extends Enemy {
     if (this.isBoss) {
       this.renderPowerObjects(ctx);
     }
+    
+    // Renderizar projéteis normais
+    this.renderPowerObjects(ctx);
+    
+    // ✨ NOVO: Renderizar projéteis aéreos
+    this.renderAerialPowers(ctx);
   }
 
   renderInkEffect(ctx) {
