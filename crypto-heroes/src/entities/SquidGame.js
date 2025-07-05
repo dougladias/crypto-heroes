@@ -65,7 +65,7 @@ export default class SquidGame extends Enemy {
     
     // ✨ NOVO: Sistema de ataques aéreos
     this.aerialPowers = [];
-    this.aerialAttackCooldown = 3000; // 3 segundos entre ataques aéreos
+    this.aerialAttackCooldown = 5000; // 3 segundos entre ataques aéreos
     this.lastAerialAttackTime = 0;
     this.aerialAttackActive = false;
     this.maxAerialProjectiles = 2; // Máximo de projéteis por ataque

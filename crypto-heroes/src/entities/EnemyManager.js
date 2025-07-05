@@ -18,7 +18,7 @@ export default class EnemyManager {
     this.explosions = [];
     this.explosionImage = assets.images['explosion'];
       // Configurações de spawn progressivo
-    this.spawnInterval = 2500; // Começar mais devagar (2.5 segundos)
+    this.spawnInterval = 200; // Começar mais devagar (2.5 segundos)
     this.lastSpawnTime = 0;
       // Sistema de progressão de dificuldade
     this.initialMaxEnemies = 3;     // Começar com apenas 4 inimigos
@@ -63,7 +63,7 @@ export default class EnemyManager {
     this.showBossMessage = false;
     this.bossMessageTimer = 0;
     this.bossMessageDuration = 2000; // 2 segundo
-    this.enemiesNeededForBoss = 100; // 5 para testar
+    this.enemiesNeededForBoss = 5; // 5 para testar
     this.bossReadyToSpawn = false; // Novo: indica que chegou a 10 mortos    // Callback para quando inimigo escapa
     this.onEnemyEscaped = null;
     
