@@ -1,6 +1,7 @@
 import Sprite from "../engine/Sprite.js";
 import AssetLoader from "../engine/AssetLoader.js";
 import PowerObject from "./PowerObject.js";
+import CrouchController from "./CrouchController.js";
 
 export default class Player {
   constructor(assets, heroId) {
@@ -25,9 +26,7 @@ export default class Player {
     this.currentSprite = this.sprites.run;
 
     this.x = 100;
-    this.y = 0;
-
-    // Estados de movimento
+    this.y = 0;    // Estados de movimento
     this.isMoving = false;
     this.facing = 1; // 1 = direita, -1 = esquerda
     this.speed = 250; // Velocidade ajustada para sprites maiores
@@ -38,12 +37,13 @@ export default class Player {
     this.gravity = 1200;
     this.jumpPower = 850;
 
-    // Sistema Fast Fall e Agachar
-    this.isCrouching = false; // Se está agachado
+    // Sistema Fast Fall
     this.isFastFalling = false; // Se está em fast fall
     this.fastFallMultiplier = 3.5; // Multiplicador da gravidade no fast fall
-    this.crouchHeight = 25; // Altura quando agachado (metade da altura normal)
     this.normalHeight = 50; // Altura normal
+
+    // ✨ NOVO: Controlador de agachar
+    this.crouchController = new CrouchController(assets, heroId);
 
     this.actionTimer = 0;
     // Sistema de objetos de poder
@@ -155,8 +155,7 @@ export default class Player {
         this.currentSprite.setFrameRange(this.frames.run); // Array com 5 frames
         this.currentSprite.setFrameRate(10); // Frame rate para corrida
         this.currentSprite.reset();
-      }
-      this.currentSprite.step(dt); // Sempre animar a corrida
+      }      this.currentSprite.step(dt); // Sempre animar a corrida
     }
 
     // Sistema Fast Fall / Agachar (tecla S)
@@ -175,62 +174,55 @@ export default class Player {
           }
         }
       } else {
-        // No chão: Agachar
-        if (!this.isCrouching) {
-          this.isCrouching = true;
-          this.height = this.crouchHeight; // Reduzir altura para colisão
+        // No chão: Agachar usando o controlador
+        if (!this.crouchController.isActivated()) {
+          this.crouchController.activate();
+          const collisionDims = this.crouchController.getCollisionDimensions();
+          this.height = collisionDims.height; // Reduzir altura para colisão
         }
-      }
-    } else {
+      }    } else {
       // Soltar tecla S
       this.isFastFalling = false;
-      if (this.isCrouching) {
-        this.isCrouching = false;
+      if (this.crouchController.isActivated()) {
+        this.crouchController.deactivate();
         this.height = this.normalHeight; // Restaurar altura normal
       }
     }
+    
+    // Atualizar controlador de agachar
+    this.crouchController.update(dt);
   }
+  
   render(ctx) {
-    // Ajustar posição Y para o boneco ficar no chão
-    const groundY = ctx.canvas.height - 280;
-    const renderY = groundY - this.y;
+    // Verificar se está agachado usando o controlador
+    if (this.crouchController.isActivated()) {
+      // Renderizar usando o controlador de agachar
+      this.crouchController.render(ctx, this.x, this.y, this.facing);
+    } else {
+      // Renderização normal
+      const groundY = ctx.canvas.height - 280;
+      const renderY = groundY - this.y;
+      const playerWidth = 130;
+      const playerHeight = 250;
 
-    // FEEDBACK VISUAL MELHORADO
-    const playerWidth = 130;
-    let playerHeight = 250;
-    let renderYAdjusted = renderY;
-
-    // Se estiver agachado, reduzir altura visual e ajustar posição
-    if (this.isCrouching) {
-      playerHeight = 160;
-      renderYAdjusted = renderY + 90;
-
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 255, 0, 0.3)";
-      ctx.shadowBlur = 5;
-    }
-
-    this.currentSprite.draw(
-      ctx,
-      this.x,
-      renderYAdjusted,
-      playerWidth,
-      playerHeight,
-      this.facing === -1
-    );
-
-    if (this.isCrouching) {
-      ctx.restore();
-    }
-
-    // Renderizar objetos de poder
+      this.currentSprite.draw(
+        ctx,
+        this.x,
+        renderY,
+        playerWidth,
+        playerHeight,
+        this.facing === -1
+      );
+    }    // Renderizar objetos de poder
     this.renderPowerObjects(ctx);
 
     // ✨ NOVO: Renderizar hitboxes de debug (ativar/desativar conforme necessário)
     if (window.debugHitboxes) {
       this.renderDebugHitboxes(ctx);
     }
-  } // Soltar objeto de poder
+  }
+  
+  // Soltar objeto de poder
   releasePowerObject() {
     // Calcular posição do objeto baseado na posição do player e direção
     const offsetX = this.facing === 1 ? 80 : -80; // Offset para frente do player (mais longe)
@@ -263,24 +255,25 @@ export default class Player {
       }
     }
   }
-
   // Renderizar todos os objetos de poder
   renderPowerObjects(ctx) {
     this.powerObjects.forEach((powerObject) => {
       powerObject.render(ctx);
     });
   }
+  
   // Obter todos os objetos de poder ativos (para colisões futuras)
   getPowerObjects() {
     return this.powerObjects;
   }
+  
   // Getter para verificar status atual
   get status() {
     return {
       facing: this.facing === 1 ? "right" : "left",
       isGrounded: this.isGrounded,
       isMoving: this.isMoving,
-      isCrouching: this.isCrouching, // ✨ NOVO
+      isCrouching: this.crouchController.isActivated(), // ✨ NOVO
       isFastFalling: this.isFastFalling, // ✨ NOVO
       currentFrame: this.currentSprite.frame,
       currentAction: this.currentAction,
@@ -294,8 +287,9 @@ export default class Player {
     const renderY = groundY - this.y;
 
     // ✨ SISTEMA DE ESQUIVA: Hitbox ajustada ao tamanho visual real
-    if (this.isCrouching) {
+    if (this.crouchController.isActivated()) {
       // Agachado: hitbox bem menor e mais baixa
+      const collisionDims = this.crouchController.getCollisionDimensions();
       return {
         x: this.x + 20, // Margem lateral (player visual tem 130px, hitbox ~100px)
         y: renderY + 70, // Muito mais baixo (120px para baixo)
@@ -331,7 +325,8 @@ export default class Player {
       }
     }
 
-    // Aplicar limites sem quebrar as ações    const previousX = this.x;
+    // Aplicar limites sem quebrar as ações
+    const previousX = this.x;
 
     if (this.x < leftLimit) {
       this.x = leftLimit;
@@ -345,11 +340,11 @@ export default class Player {
   // Método para receber dano
   takeDamage(damage) {
     // Aplicar dano ao player - por enquanto só usar o callback
-    // Você pode expandir aqui para ter sistema de HP se quiser
-
-    // Por enquanto, usar o callback existente para simular perda de vida
+    // Você pode expandir aqui para ter sistema de HP se quiser    // Por enquanto, usar o callback existente para simular perda de vida
     return true;
-  } // ✨ NOVO: Métodos do poder especial
+  }
+
+  // ✨ NOVO: Métodos do poder especial
 
   // Método chamado quando um inimigo é morto
   onEnemyKilled(enemy) {
@@ -427,7 +422,6 @@ export default class Player {
       cooldown: this.specialPowerCooldown,
     };
   }
-
   // ✨ NOVO: Método para renderizar hitboxes de debug
   renderDebugHitboxes(ctx) {
     // 1. HITBOX DO PLAYER
@@ -435,7 +429,7 @@ export default class Player {
     ctx.save();
 
     // Cor baseada no estado
-    if (this.isCrouching) {
+    if (this.crouchController.isActivated()) {
       ctx.strokeStyle = "lime"; // Verde brilhante quando agachado
       ctx.fillStyle = "rgba(0, 255, 0, 0.2)"; // Verde translúcido
     } else {
@@ -464,7 +458,7 @@ export default class Player {
     ctx.font = "bold 14px Arial";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
-    const statusText = this.isCrouching ? "🟢 AGACHADO" : "🔴 EM PÉ";
+    const statusText = this.crouchController.isActivated() ? "🟢 AGACHADO" : "🔴 EM PÉ";
     ctx.strokeText(statusText, playerBounds.x, playerBounds.y - 10);
     ctx.fillText(statusText, playerBounds.x, playerBounds.y - 10);
 
