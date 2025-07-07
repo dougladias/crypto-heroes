@@ -40,7 +40,14 @@ const IMAGES = {
   gbrl_power:  'assets/person/globoo-br/real-power-sprites.png',    
   gusd_power:  'assets/person/globoo-usd/dollar-power-sprites.png',  
   geur_power:  'assets/person/globoo-eur/euro-power-sprites.png',     
-  
+
+  // Sprites de animação crouch
+  btc_crouch:  'assets/person/bitcoin/bitcoin-crouch-sprites.png',
+  eth_crouch:  'assets/person/ethereum/ethereum-crouch-sprites.png',
+  gbrl_crouch: 'assets/person/globoo-br/real-crouch-sprites.png',
+  gusd_crouch: 'assets/person/globoo-usd/dollar-crouch-sprites.png',
+  geur_crouch: 'assets/person/globoo-eur/euro-crouch-sprites.png',
+
   // Poderes dos heróis
   power_brl: 'assets/object/power-brl.png',
   power_eur: 'assets/object/power-eur.png',
